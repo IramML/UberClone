@@ -28,10 +28,13 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.iramml.uberclone.Messages.Errors;
+import com.iramml.uberclone.Messages.Message;
 import com.iramml.uberclone.Model.User;
 import com.iramml.uberclone.R;
 import com.rengwuxian.materialedittext.MaterialEditText;
 
+import dmax.dialog.SpotsDialog;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
@@ -96,6 +99,8 @@ public class Login extends AppCompatActivity implements GoogleApiClient.OnConnec
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 dialogInterface.dismiss();
+
+                btnLogIn.setEnabled(false);
                 if (TextUtils.isEmpty(etEmail.getText().toString())){
                     Snackbar.make(root, "Pleace enter email address", Snackbar.LENGTH_SHORT).show();
                     return;
@@ -108,15 +113,20 @@ public class Login extends AppCompatActivity implements GoogleApiClient.OnConnec
                     Snackbar.make(root, "Password too short", Snackbar.LENGTH_SHORT).show();
                     return;
                 }
+                final SpotsDialog waitingDialog=new SpotsDialog(Login.this);
+                waitingDialog.show();
                 firebaseAuth.signInWithEmailAndPassword(etEmail.getText().toString(), etPassword.getText().toString()).addOnSuccessListener(new OnSuccessListener<AuthResult>() {
                     @Override
                     public void onSuccess(AuthResult authResult) {
+                        waitingDialog.dismiss();
                         goToMainActivity();
                     }
                 }).addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
+                        waitingDialog.dismiss();
                         Snackbar.make(root, "Failed"+e.getMessage(), Snackbar.LENGTH_SHORT).show();
+                        btnLogIn.setEnabled(true);
                     }
                 });
             }
@@ -146,6 +156,7 @@ public class Login extends AppCompatActivity implements GoogleApiClient.OnConnec
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 dialogInterface.dismiss();
+
                 if (TextUtils.isEmpty(etEmail.getText().toString())){
                     Snackbar.make(root, "Pleace enter email address", Snackbar.LENGTH_SHORT).show();
                     return;
@@ -176,7 +187,9 @@ public class Login extends AppCompatActivity implements GoogleApiClient.OnConnec
                                 user.setPassword(etPassword.getText().toString());
                                 user.setPhone(etPhone.getText().toString());
 
-                                users.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).setValue(user).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                users.child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                                        .setValue(user)
+                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
                                     @Override
                                     public void onSuccess(Void aVoid) {
                                         Snackbar.make(root, "Registered", Snackbar.LENGTH_SHORT).show();
@@ -217,7 +230,7 @@ public class Login extends AppCompatActivity implements GoogleApiClient.OnConnec
         if (result.isSuccess()){
             loginSuccess();
         }else{
-            Toast.makeText(this,"Could not login",Toast.LENGTH_SHORT).show();
+            Message.messageError(this, Errors.ERROR_LOGIN_GOOGLE);
         }
     }
     private void loginSuccess(){
