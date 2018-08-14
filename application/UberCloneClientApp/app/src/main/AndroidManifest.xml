@@ -36,8 +36,9 @@
             android:value="@string/google_maps_key" />
 
         <activity
-            android:name=".Activities.Main"
-            android:label="@string/title_activity_main"></activity>
+            android:name=".Activities.Home"
+            android:label="@string/title_activity_home"
+            android:theme="@style/AppTheme"></activity>
     </application>
 
 </manifest>

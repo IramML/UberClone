@@ -250,7 +250,7 @@ public class Login extends AppCompatActivity implements GoogleApiClient.OnConnec
         super.attachBaseContext(CalligraphyContextWrapper.wrap(newBase));
     }
     private void goToMainActivity(){
-        startActivity(new Intent(Login.this, Main.class));
+        startActivity(new Intent(Login.this, Home.class));
         finish();
     }
 }

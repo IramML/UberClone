@@ -239,7 +239,7 @@ public class Login extends AppCompatActivity implements GoogleApiClient.OnConnec
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
+        Message.messageError(this, Errors.ERROR_LOGIN_GOOGLE);
     }
 
     @Override

@@ -35,6 +35,7 @@ dependencies {
     implementation 'uk.co.chrisjenx:calligraphy:2.3.0'
     implementation 'com.google.android.gms:play-services-location:15.0.1'
     implementation 'com.google.android.gms:play-services-maps:15.0.1'
+    implementation 'com.google.android.gms:play-services-places:15.0.1'
     implementation 'com.android.support:cardview-v7:28.0.0-alpha1'
     implementation 'com.github.d-max:spots-dialog:0.7@aar'
 }
