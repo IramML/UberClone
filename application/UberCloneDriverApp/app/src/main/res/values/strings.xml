@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">UberClone</string>
     <string name="title_activity_main">Map</string>
+    <string name="google_direction_api">AIzaSyDUUCshvAeC-FyxOvtQLaxBxfgOL35OKlg</string>
 </resources>

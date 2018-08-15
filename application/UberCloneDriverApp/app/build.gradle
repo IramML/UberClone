@@ -34,8 +34,12 @@ dependencies {
     implementation 'com.rengwuxian.materialedittext:library:2.1.4'
     implementation 'uk.co.chrisjenx:calligraphy:2.3.0'
     implementation 'com.google.android.gms:play-services-location:15.0.1'
+    implementation 'com.google.android.gms:play-services-places:15.0.1'
     implementation 'com.google.android.gms:play-services-maps:15.0.1'
     implementation 'com.android.support:cardview-v7:28.0.0-alpha1'
     implementation 'com.github.d-max:spots-dialog:0.7@aar'
+    implementation 'com.squareup.retrofit2:retrofit:2.3.0'
+    implementation 'com.squareup.retrofit2:converter-scalars:2.3.0'
+    implementation 'com.google.code.gson:gson:2.8.2'
 }
 apply plugin: 'com.google.gms.google-services'
