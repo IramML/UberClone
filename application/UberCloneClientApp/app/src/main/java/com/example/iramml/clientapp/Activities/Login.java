@@ -14,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 
+import com.example.iramml.clientapp.Common.Common;
 import com.example.iramml.clientapp.Messages.Errors;
 import com.example.iramml.clientapp.Messages.Message;
 import com.example.iramml.clientapp.Model.Rider;
@@ -65,7 +66,7 @@ public class Login extends AppCompatActivity implements GoogleApiClient.OnConnec
         });
         firebaseAuth=FirebaseAuth.getInstance();
         firebaseDatabase=FirebaseDatabase.getInstance();
-        users=firebaseDatabase.getReference("Riders");
+        users=firebaseDatabase.getReference(Common.user_rider_tbl);
         btnSignIn=findViewById(R.id.btnSignin);
         btnLogIn=findViewById(R.id.btnLogin);
         root=findViewById(R.id.root);

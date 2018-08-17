@@ -44,7 +44,7 @@
                 android:gravity="center_vertical">
                 <ImageView
                     android:layout_weight="1"
-                    android:src="@drawable/ic_pin_drop"
+                    android:src="@drawable/ic_location_drop"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content" />
                 <fragment

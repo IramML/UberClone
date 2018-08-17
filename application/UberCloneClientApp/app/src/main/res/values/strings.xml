@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ClientApp</string>
+    <string name="app_name">RiderApp</string>
     <string name="title_activity_main">Map</string>
     <string name="title_activity_home">Home</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>

@@ -227,7 +227,7 @@ public class Main extends AppCompatActivity implements OnMapReadyCallback, Googl
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        drivers= FirebaseDatabase.getInstance().getReference("Drivers");
+        drivers= FirebaseDatabase.getInstance().getReference(Common.driver_tbl);
         geoFire=new GeoFire(drivers);
 
         setUpLocation();

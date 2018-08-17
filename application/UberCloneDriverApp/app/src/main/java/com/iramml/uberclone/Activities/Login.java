@@ -28,6 +28,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.iramml.uberclone.Common.Common;
 import com.iramml.uberclone.Messages.Errors;
 import com.iramml.uberclone.Messages.Message;
 import com.iramml.uberclone.Model.User;
@@ -67,7 +68,7 @@ public class Login extends AppCompatActivity implements GoogleApiClient.OnConnec
         });
         firebaseAuth=FirebaseAuth.getInstance();
         firebaseDatabase=FirebaseDatabase.getInstance();
-        users=firebaseDatabase.getReference("Users");
+        users=firebaseDatabase.getReference(Common.user_driver_tbl);
         btnSignIn=findViewById(R.id.btnSignin);
         btnLogIn=findViewById(R.id.btnLogin);
         root=findViewById(R.id.root);
