@@ -13,6 +13,9 @@ public class Message {
             case RATIONALE:
                 str="Permission is required to obtain location";
                 break;
+            case REQUEST_SUCCESS:
+                str="Request sent";
+                break;
         }
         Toast.makeText(context, str, Toast.LENGTH_SHORT).show();
     }
@@ -28,6 +31,9 @@ public class Message {
                 break;
             case WITHOUT_LOCATION:
                 str="Cannot get your location";
+                break;
+            case SENT_FAILED:
+                str="Sent failed";
                 break;
         }
         Toast.makeText(context, str, Toast.LENGTH_SHORT).show();

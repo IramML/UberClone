@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".Activities.Login"
     android:id="@+id/root"
-    android:background="@mipmap/bg_login">
+    android:background="@drawable/bg_login_uber_clone_driver">
 
     <LinearLayout
         android:layout_width="wrap_content"

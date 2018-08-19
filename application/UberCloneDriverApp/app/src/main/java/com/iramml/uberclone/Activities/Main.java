@@ -53,6 +53,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.gson.Gson;
 import com.iramml.uberclone.Common.Common;
 import com.iramml.uberclone.GoogleAPIRoutesRequest.GoogleMapsAPIRequest;
@@ -60,6 +61,7 @@ import com.iramml.uberclone.Interfaces.googleAPIInterface;
 import com.iramml.uberclone.Interfaces.locationListener;
 import com.iramml.uberclone.Messages.Errors;
 import com.iramml.uberclone.Messages.Message;
+import com.iramml.uberclone.Model.Token;
 import com.iramml.uberclone.R;
 import com.iramml.uberclone.Util.Location;
 
@@ -80,9 +82,6 @@ public class Main extends AppCompatActivity implements OnMapReadyCallback, Googl
     GeoFire geoFire;
 
     private GoogleApiClient mGoogleApiClient;
-
-    Double currentLat;
-    Double currentLng;
 
     private static final int REQUEST_CODE_PERMISSION=100;
     private static final int PLAY_SERVICES_REQUEST_CODE=2001;
@@ -181,8 +180,8 @@ public class Main extends AppCompatActivity implements OnMapReadyCallback, Googl
             @Override
             public void locationResponse(LocationResult response) {
                 // Add a marker in Sydney and move the camera
-                currentLat=response.getLastLocation().getLatitude();
-                currentLng=response.getLastLocation().getLongitude();
+                Common.currentLat=response.getLastLocation().getLatitude();
+                Common.currentLng=response.getLastLocation().getLongitude();
                 displayLocation();
             }
         });
@@ -232,14 +231,24 @@ public class Main extends AppCompatActivity implements OnMapReadyCallback, Googl
 
         setUpLocation();
         mService= Common.getGoogleAPI();
+        updateFirebaseToken();
     }
+
+    private void updateFirebaseToken() {
+        FirebaseDatabase db=FirebaseDatabase.getInstance();
+        DatabaseReference tokens=db.getReference(Common.token_tbl);
+
+        Token token=new Token(FirebaseInstanceId.getInstance().getToken());
+        tokens.child(FirebaseAuth.getInstance().getUid()).setValue(token);
+    }
+
     private void getDirection(){
-        currentPosition=new LatLng(currentLat, currentLng);
+        currentPosition=new LatLng(Common.currentLat, Common.currentLng);
         final String requestApi;
 
         try{
             requestApi="https://maps.googleapis.com/maps/api/directions/json?mode=driving&" +
-                    "transit_routing_preference=less_driving&origin="+currentLat+","+currentLng+"&" +
+                    "transit_routing_preference=less_driving&origin="+Common.currentLat+","+Common.currentLng+"&" +
                     "destination="+destination;
             Log.d("URL_MAPS", requestApi);
             mService.getPath(requestApi).enqueue(new Callback<String>() {
@@ -390,22 +399,22 @@ public class Main extends AppCompatActivity implements OnMapReadyCallback, Googl
     }
 
     private void displayLocation(){
-        if (currentLat!=null && currentLng!=null){
+        if (Common.currentLat!=null && Common.currentLng!=null){
             if (locationSwitch.isChecked()) {
                 String user="";
                 if (account!=null)user=account.getId();
                 else user=FirebaseAuth.getInstance().getCurrentUser().getUid();
                 geoFire.setLocation(user,
-                        new GeoLocation(currentLat, currentLng),
+                        new GeoLocation(Common.currentLat, Common.currentLng),
                         new GeoFire.CompletionListener() {
                             @Override
                             public void onComplete(String key, DatabaseError error) {
-                                LatLng currentLocation = new LatLng(currentLat, currentLng);
+                                LatLng currentLocation = new LatLng(Common.currentLat, Common.currentLng);
                                 if (currentLocationMarket != null) currentLocationMarket.remove();
 
                                 currentLocationMarket = mMap.addMarker(new MarkerOptions().position(currentLocation)
                                         .title("Your Location"));
-                                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(currentLat, currentLng), 15.0f));
+                                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(Common.currentLat, Common.currentLng), 15.0f));
 
                             }
                         });

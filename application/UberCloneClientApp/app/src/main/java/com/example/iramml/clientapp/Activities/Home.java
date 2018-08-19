@@ -4,9 +4,8 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -23,10 +22,16 @@ import android.widget.Toast;
 import com.example.iramml.clientapp.Common.Common;
 import com.example.iramml.clientapp.Fragments.BottomSheetRiderFragment;
 import com.example.iramml.clientapp.Helper.CustomInfoWindow;
+import com.example.iramml.clientapp.Interfaces.IFCMService;
 import com.example.iramml.clientapp.Interfaces.locationListener;
 import com.example.iramml.clientapp.Messages.Errors;
 import com.example.iramml.clientapp.Messages.Message;
+import com.example.iramml.clientapp.Messages.Messages;
+import com.example.iramml.clientapp.Model.FCMResponse;
+import com.example.iramml.clientapp.Model.Notification;
 import com.example.iramml.clientapp.Model.Rider;
+import com.example.iramml.clientapp.Model.Sender;
+import com.example.iramml.clientapp.Model.Token;
 import com.example.iramml.clientapp.R;
 import com.example.iramml.clientapp.Util.Location;
 import com.firebase.geofire.GeoFire;
@@ -58,6 +63,12 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.gson.Gson;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class Home extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
@@ -89,12 +100,15 @@ public class Home extends AppCompatActivity
     int radius=1;// km
     int distance=1;
     private static final int LIMIT=3;
+
+    IFCMService ifcmService;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        ifcmService=Common.getFCMService();
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -151,11 +165,55 @@ public class Home extends AppCompatActivity
                     String id;
                     if (account != null) id = account.getId();
                     else id = FirebaseAuth.getInstance().getCurrentUser().getUid();
-                    requestPickup(id);
+
+                    if (!driverFound)requestPickup(id);
+                    else sendRequestToDriver();
                 }
             }
         });
         setUpLocation();
+        updateFirebaseToken();
+    }
+    private void updateFirebaseToken() {
+        FirebaseDatabase db=FirebaseDatabase.getInstance();
+        DatabaseReference tokens=db.getReference(Common.token_tbl);
+
+        Token token=new Token(FirebaseInstanceId.getInstance().getToken());
+        tokens.child(FirebaseAuth.getInstance().getUid()).setValue(token);
+    }
+    private void sendRequestToDriver() {
+        DatabaseReference tokens=FirebaseDatabase.getInstance().getReference(Common.token_tbl);
+
+        tokens.orderByKey().equalTo(driverID).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot postSnapShot:dataSnapshot.getChildren()){
+                    Token token=postSnapShot.getValue(Token.class);
+                    String json_lat_lng=new Gson().toJson(new LatLng(currentLat, currentLng));
+
+                    Notification data=new Notification("IRAMML", json_lat_lng);
+                    Sender content=new Sender(token.getToken(), data);
+
+                    ifcmService.sendMessage(content).enqueue(new Callback<FCMResponse>() {
+                        @Override
+                        public void onResponse(Call<FCMResponse> call, Response<FCMResponse> response) {
+                            if (response.body().success==1) Message.message(Home.this, Messages.REQUEST_SUCCESS);
+                            else Message.messageError(Home.this, Errors.SENT_FAILED);
+                        }
+
+                        @Override
+                        public void onFailure(Call<FCMResponse> call, Throwable t) {
+                            Log.d("ERROR", t.getMessage());
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 
     private void requestPickup(String uid) {
