@@ -11,6 +11,6 @@ Make use of:
 - Support design
 
 ## Screenshots
-|Rider Application|Driver Application|
+|Driver Application|Rider Application|
 |---|---|
-|![ScreenshotDriverApp00](https://github.com/IramML/UberClone/blob/master/Images/Screenshot_DriverApp_00.png)|![ScreenshotRiderApp00](https://github.com/IramML/UberClone/blob/master/Images/Screenshot_DriverApp_00.png)|
+|![ScreenshotDriverApp00](https://github.com/IramML/UberClone/blob/master/Images/Screenshot_DriverApp_00.png)|![ScreenshotRiderApp00](https://github.com/IramML/UberClone/blob/master/Images/Screenshot_RiderApp_00.png)|
