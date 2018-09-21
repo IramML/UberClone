@@ -406,17 +406,18 @@ public class Home extends AppCompatActivity
                 FirebaseDatabase.getInstance().getReference(Common.user_driver_tbl).child(key).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        Rider rider=dataSnapshot.getValue(Rider.class);
+
+
+                        Rider driver=dataSnapshot.getValue(Rider.class);
                         String name;
                         String phone;
-                        if (account!=null){
-                            name=account.getDisplayName();
-                            phone="none";
-                        }else{
-                            name=rider.getName();
-                            if (rider.getPhone()!=null)phone="Phone: "+rider.getPhone();
-                            else phone="Phone: none";
-                        }
+
+                        if(driver.getName()!=null) name=driver.getName();
+                        else name="not available";
+
+                        if (driver.getPhone()!=null)phone="Phone: "+driver.getPhone();
+                        else phone="Phone: none";
+
 
                         mMap.addMarker(new MarkerOptions().position(new LatLng(location.latitude, location.longitude)).flat(true)
                                 .title(name).snippet(phone).icon(BitmapDescriptorFactory.fromResource(R.drawable.car)));

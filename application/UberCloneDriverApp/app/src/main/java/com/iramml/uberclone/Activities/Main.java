@@ -239,7 +239,8 @@ public class Main extends AppCompatActivity implements OnMapReadyCallback, Googl
         DatabaseReference tokens=db.getReference(Common.token_tbl);
 
         Token token=new Token(FirebaseInstanceId.getInstance().getToken());
-        tokens.child(FirebaseAuth.getInstance().getUid()).setValue(token);
+        if(account.getId()==null)tokens.child(FirebaseAuth.getInstance().getUid()).setValue(token);
+        else tokens.child(account.getId()).setValue(token);
     }
 
     private void getDirection(){

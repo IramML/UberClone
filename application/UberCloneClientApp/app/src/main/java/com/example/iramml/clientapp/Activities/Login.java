@@ -20,6 +20,7 @@ import com.example.iramml.clientapp.Messages.Message;
 import com.example.iramml.clientapp.Model.Rider;
 import com.example.iramml.clientapp.R;
 import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
@@ -29,8 +30,11 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.rengwuxian.materialedittext.MaterialEditText;
 
 import dmax.dialog.SpotsDialog;
@@ -46,6 +50,7 @@ public class Login extends AppCompatActivity implements GoogleApiClient.OnConnec
     DatabaseReference users;
 
     ConstraintLayout root;
+    GoogleSignInAccount account;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -216,6 +221,49 @@ public class Login extends AppCompatActivity implements GoogleApiClient.OnConnec
         });
         alertDialog.show();
     }
+    private void showRegisterPhone(final Rider user){
+        AlertDialog.Builder alertDialog=new AlertDialog.Builder(this);
+        alertDialog.setTitle("SIGN IN");
+        alertDialog.setMessage("Please fill all fields");
+
+        LayoutInflater inflater=LayoutInflater.from(this);
+        View register_phone_layout=inflater.inflate(R.layout.layout_register_phone, null);
+        final MaterialEditText etPhone=register_phone_layout.findViewById(R.id.etPhone);
+
+        alertDialog.setView(register_phone_layout);
+        alertDialog.setPositiveButton("LOG IN", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.dismiss();
+                user.setEmail(account.getEmail());
+                user.setName(account.getDisplayName());
+                user.setPassword(null);
+                user.setPhone(etPhone.getText().toString());
+                users.child(account.getId())
+                        .setValue(user)
+                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                Snackbar.make(root, "Registered", Snackbar.LENGTH_SHORT).show();
+                                loginSuccess();
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Snackbar.make(root, "Failed "+e.getMessage(), Snackbar.LENGTH_SHORT).show();
+
+                    }
+                });
+            }
+        });
+        alertDialog.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.dismiss();
+            }
+        });
+        alertDialog.show();
+    }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -227,7 +275,26 @@ public class Login extends AppCompatActivity implements GoogleApiClient.OnConnec
     }
     private void handleSignInResult(GoogleSignInResult result) {
         if (result.isSuccess()){
-            loginSuccess();
+            final Rider user=new Rider();
+            account = result.getSignInAccount();
+
+            users.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    Rider post = dataSnapshot.child(account.getId()).getValue(Rider.class);
+
+                    if(post==null) showRegisterPhone(user);
+                    else loginSuccess();
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
+
+
+
         }else{
             Message.messageError(this, Errors.ERROR_LOGIN_GOOGLE);
         }
