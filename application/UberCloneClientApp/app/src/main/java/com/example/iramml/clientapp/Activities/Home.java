@@ -102,10 +102,13 @@ public class Home extends AppCompatActivity
     private static final int LIMIT=3;
 
     IFCMService ifcmService;
+
+    DatabaseReference driversAvailable;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+        verifyGoogleAccount();
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ifcmService=Common.getFCMService();
@@ -118,23 +121,9 @@ public class Home extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-        GoogleSignInOptions gso=new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().build();
-        mGoogleApiClient=new GoogleApiClient.Builder(this)
-                .enableAutoManage(this, this)
-                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
-                .build();
-        OptionalPendingResult<GoogleSignInResult> opr=Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
-        if (opr.isDone()){
-            GoogleSignInResult result= opr.get();
-            handleSignInResult(result);
-        }else {
-            opr.setResultCallback(new ResultCallback<GoogleSignInResult>() {
-                @Override
-                public void onResult(@NonNull GoogleSignInResult googleSignInResult) {
-                    handleSignInResult(googleSignInResult);
-                }
-            });
-        }
+
+
+
         location=new Location(this, new locationListener() {
             @Override
             public void locationResponse(LocationResult response) {
@@ -142,6 +131,18 @@ public class Home extends AppCompatActivity
                 currentLat=response.getLastLocation().getLatitude();
                 currentLng=response.getLastLocation().getLongitude();
                 displayLocation();
+                driversAvailable=FirebaseDatabase.getInstance().getReference(Common.driver_tbl);
+                driversAvailable.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        loadAllAvailableDriver();
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
             }
         });
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -174,12 +175,34 @@ public class Home extends AppCompatActivity
         setUpLocation();
         updateFirebaseToken();
     }
+
+    private void verifyGoogleAccount() {
+        GoogleSignInOptions gso=new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().build();
+        mGoogleApiClient=new GoogleApiClient.Builder(this)
+                .enableAutoManage(this, this)
+                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                .build();
+        OptionalPendingResult<GoogleSignInResult> opr=Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
+        if (opr.isDone()){
+            GoogleSignInResult result= opr.get();
+            handleSignInResult(result);
+        }else {
+            opr.setResultCallback(new ResultCallback<GoogleSignInResult>() {
+                @Override
+                public void onResult(@NonNull GoogleSignInResult googleSignInResult) {
+                    handleSignInResult(googleSignInResult);
+                }
+            });
+        }
+    }
+
     private void updateFirebaseToken() {
         FirebaseDatabase db=FirebaseDatabase.getInstance();
         DatabaseReference tokens=db.getReference(Common.token_tbl);
 
         Token token=new Token(FirebaseInstanceId.getInstance().getToken());
-        tokens.child(FirebaseAuth.getInstance().getUid()).setValue(token);
+        if(FirebaseAuth.getInstance().getUid()!=null) tokens.child(FirebaseAuth.getInstance().getUid()).setValue(token);
+        else tokens.child(account.getId()).setValue(token);
     }
     private void sendRequestToDriver() {
         DatabaseReference tokens=FirebaseDatabase.getInstance().getReference(Common.token_tbl);
@@ -395,6 +418,11 @@ public class Home extends AppCompatActivity
     }
 
     private void loadAllAvailableDriver() {
+        mMap.clear();
+
+        mMap.addMarker(new MarkerOptions().position(new LatLng(currentLat, currentLng)).title("You"));
+
+
         DatabaseReference driverLocation=FirebaseDatabase.getInstance().getReference(Common.driver_tbl);
         GeoFire geoFire=new GeoFire(driverLocation);
 

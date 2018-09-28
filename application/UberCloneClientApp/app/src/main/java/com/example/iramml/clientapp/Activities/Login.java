@@ -21,11 +21,14 @@ import com.example.iramml.clientapp.Model.Rider;
 import com.example.iramml.clientapp.R;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInApi;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.OptionalPendingResult;
+import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.AuthResult;
@@ -56,6 +59,8 @@ public class Login extends AppCompatActivity implements GoogleApiClient.OnConnec
         super.onCreate(savedInstanceState);
         CalligraphyConfig.initDefault(new CalligraphyConfig.Builder().setDefaultFontPath("fonts/NotoSans.ttf").setFontAttrId(R.attr.fontPath).build());
         setContentView(R.layout.activity_login);
+
+
         SignInButton signInButtonGoogle=findViewById(R.id.login_button_Google);
         GoogleSignInOptions gso=new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().build();
         googleApiClient=new GoogleApiClient.Builder(this)
@@ -72,6 +77,7 @@ public class Login extends AppCompatActivity implements GoogleApiClient.OnConnec
         firebaseAuth=FirebaseAuth.getInstance();
         firebaseDatabase=FirebaseDatabase.getInstance();
         users=firebaseDatabase.getReference(Common.user_rider_tbl);
+        if(firebaseAuth.getUid()!=null)loginSuccess();
         btnSignIn=findViewById(R.id.btnSignin);
         btnLogIn=findViewById(R.id.btnLogin);
         root=findViewById(R.id.root);
@@ -88,6 +94,21 @@ public class Login extends AppCompatActivity implements GoogleApiClient.OnConnec
             }
         });
     }
+
+    private void verifyGoogleAccount() {
+        OptionalPendingResult<GoogleSignInResult> opr=Auth.GoogleSignInApi.silentSignIn(googleApiClient);
+        if (opr.isDone()){
+            GoogleSignInResult result= opr.get();
+            if (result.isSuccess()) loginSuccess();
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        verifyGoogleAccount();
+    }
+
     private void showLoginDialog(){
         AlertDialog.Builder alertDialog=new AlertDialog.Builder(this);
         alertDialog.setTitle("LOG IN");
@@ -272,6 +293,7 @@ public class Login extends AppCompatActivity implements GoogleApiClient.OnConnec
             GoogleSignInResult result=Auth.GoogleSignInApi.getSignInResultFromIntent(data);
             handleSignInResult(result);
         }
+
     }
     private void handleSignInResult(GoogleSignInResult result) {
         if (result.isSuccess()){
@@ -295,9 +317,8 @@ public class Login extends AppCompatActivity implements GoogleApiClient.OnConnec
 
 
 
-        }else{
-            Message.messageError(this, Errors.ERROR_LOGIN_GOOGLE);
-        }
+        }else Message.messageError(this, Errors.ERROR_LOGIN_GOOGLE);
+
     }
     private void loginSuccess(){
         goToMainActivity();

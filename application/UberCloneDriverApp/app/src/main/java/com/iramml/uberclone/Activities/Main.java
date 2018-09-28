@@ -50,9 +50,11 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.SquareCap;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.gson.Gson;
 import com.iramml.uberclone.Common.Common;
@@ -104,6 +106,8 @@ public class Main extends AppCompatActivity implements OnMapReadyCallback, Googl
     private Polyline blackPolyline, greyPolyline;
 
     private googleAPIInterface mService;
+
+    DatabaseReference onlineRef, currentUserRef;
 
     Runnable drawPathRunnable=new Runnable() {
         @Override
@@ -159,23 +163,20 @@ public class Main extends AppCompatActivity implements OnMapReadyCallback, Googl
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        GoogleSignInOptions gso=new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().build();
-        mGoogleApiClient=new GoogleApiClient.Builder(this)
-                .enableAutoManage(this, this)
-                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
-                .build();
-        OptionalPendingResult<GoogleSignInResult> opr=Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
-        if (opr.isDone()){
-            GoogleSignInResult result= opr.get();
-            handleSignInResult(result);
-        }else {
-            opr.setResultCallback(new ResultCallback<GoogleSignInResult>() {
-                @Override
-                public void onResult(@NonNull GoogleSignInResult googleSignInResult) {
-                    handleSignInResult(googleSignInResult);
-                }
-            });
-        }
+        verifyGoogleAccount();
+        onlineRef=FirebaseDatabase.getInstance().getReference().child(".info/connected");
+        currentUserRef=FirebaseDatabase.getInstance().getReference(Common.driver_tbl);
+        onlineRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                currentUserRef.onDisconnect().removeValue();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
         location=new Location(this, new locationListener() {
             @Override
             public void locationResponse(LocationResult response) {
@@ -191,12 +192,14 @@ public class Main extends AppCompatActivity implements OnMapReadyCallback, Googl
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 if (b){
+                    FirebaseDatabase.getInstance().goOnline();
                     location.inicializeLocation();
                 }else{
+                    FirebaseDatabase.getInstance().goOffline();
                     location.stopUpdateLocation();
                     currentLocationMarket.remove();
                     mMap.clear();
-                    handler.removeCallbacks(drawPathRunnable);
+                    //handler.removeCallbacks(drawPathRunnable);
                     if (currentLocationMarket!=null)currentLocationMarket.remove();
                 }
             }
@@ -234,12 +237,32 @@ public class Main extends AppCompatActivity implements OnMapReadyCallback, Googl
         updateFirebaseToken();
     }
 
+    private void verifyGoogleAccount() {
+        GoogleSignInOptions gso=new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().build();
+        mGoogleApiClient=new GoogleApiClient.Builder(this)
+                .enableAutoManage(this, this)
+                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                .build();
+        OptionalPendingResult<GoogleSignInResult> opr=Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
+        if (opr.isDone()){
+            GoogleSignInResult result= opr.get();
+            handleSignInResult(result);
+        }else {
+            opr.setResultCallback(new ResultCallback<GoogleSignInResult>() {
+                @Override
+                public void onResult(@NonNull GoogleSignInResult googleSignInResult) {
+                    handleSignInResult(googleSignInResult);
+                }
+            });
+        }
+    }
+
     private void updateFirebaseToken() {
         FirebaseDatabase db=FirebaseDatabase.getInstance();
         DatabaseReference tokens=db.getReference(Common.token_tbl);
 
         Token token=new Token(FirebaseInstanceId.getInstance().getToken());
-        if(account.getId()==null)tokens.child(FirebaseAuth.getInstance().getUid()).setValue(token);
+        if(FirebaseAuth.getInstance().getUid()!=null)tokens.child(FirebaseAuth.getInstance().getUid()).setValue(token);
         else tokens.child(account.getId()).setValue(token);
     }
 

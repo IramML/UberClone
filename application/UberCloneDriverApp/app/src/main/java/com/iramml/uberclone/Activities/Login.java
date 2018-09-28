@@ -23,6 +23,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.OptionalPendingResult;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.AuthResult;
@@ -75,6 +76,7 @@ public class Login extends AppCompatActivity implements GoogleApiClient.OnConnec
         firebaseAuth=FirebaseAuth.getInstance();
         firebaseDatabase=FirebaseDatabase.getInstance();
         users=firebaseDatabase.getReference(Common.user_driver_tbl);
+        if(firebaseAuth.getUid()!=null)loginSuccess();
         btnSignIn=findViewById(R.id.btnSignin);
         btnLogIn=findViewById(R.id.btnLogin);
         root=findViewById(R.id.root);
@@ -145,6 +147,19 @@ public class Login extends AppCompatActivity implements GoogleApiClient.OnConnec
             }
         });
         alertDialog.show();
+    }
+    private void verifyGoogleAccount() {
+        OptionalPendingResult<GoogleSignInResult> opr=Auth.GoogleSignInApi.silentSignIn(googleApiClient);
+        if (opr.isDone()){
+            GoogleSignInResult result= opr.get();
+            if (result.isSuccess()) loginSuccess();
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        verifyGoogleAccount();
     }
     private void showRegistrerDialog(){
         AlertDialog.Builder alertDialog=new AlertDialog.Builder(this);
