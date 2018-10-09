@@ -24,14 +24,14 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="UBER"
+            android:text="DRIVER"
             android:textColor="@android:color/white"
             android:textSize="32sp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="CLONE"
+            android:text="UBER CLONE"
             android:textColor="@android:color/white"
             android:textSize="16sp" />
     </LinearLayout>
@@ -51,7 +51,7 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="16dp"
             android:layout_marginStart="16dp"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="4dp"
             android:layout_gravity="center"
             app:colorScheme="dark"
             app:buttonSize="wide"
@@ -59,32 +59,29 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.501"
             app:layout_constraintStart_toStartOf="parent" />
-
-        <LinearLayout
+        <Button
+            android:background="@drawable/btn_sign_in_background"
+            android:id="@+id/btnSignin"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:weightSum="2">
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginBottom="4dp"
+            android:textColor="#fff"
+            android:text="Sign in" />
 
-            <Button
-                android:background="@drawable/btn_sign_in_background"
-                android:id="@+id/btnSignin"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="4dp"
-                android:layout_weight="1"
-                android:textColor="#fff"
-                android:text="Sign in" />
+        <Button
+            android:id="@+id/btnLogin"
+            android:background="@drawable/btn_log_in_backgroud"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginBottom="16dp"
+            android:text="Log in" />
 
-            <Button
-                android:id="@+id/btnLogin"
-                android:background="@drawable/btn_log_in_backgroud"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="4dp"
-                android:layout_weight="1"
-                android:text="Log in" />
-        </LinearLayout>
     </LinearLayout>
 
 

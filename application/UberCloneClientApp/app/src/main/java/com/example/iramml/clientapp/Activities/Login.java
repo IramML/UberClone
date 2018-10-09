@@ -15,6 +15,7 @@ import android.view.View;
 import android.widget.Button;
 
 import com.example.iramml.clientapp.Common.Common;
+import com.example.iramml.clientapp.Helper.FirebaseHelper;
 import com.example.iramml.clientapp.Messages.Errors;
 import com.example.iramml.clientapp.Messages.Message;
 import com.example.iramml.clientapp.Model.Rider;
@@ -48,19 +49,16 @@ public class Login extends AppCompatActivity implements GoogleApiClient.OnConnec
     private GoogleApiClient googleApiClient;
     public static final int SIGN_IN_CODE_GOOGLE=157;
     Button btnSignIn, btnLogIn;
-    FirebaseAuth firebaseAuth;
-    FirebaseDatabase firebaseDatabase;
-    DatabaseReference users;
 
-    ConstraintLayout root;
+    FirebaseHelper firebaseHelper;
     GoogleSignInAccount account;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         CalligraphyConfig.initDefault(new CalligraphyConfig.Builder().setDefaultFontPath("fonts/NotoSans.ttf").setFontAttrId(R.attr.fontPath).build());
         setContentView(R.layout.activity_login);
-
-
+        firebaseHelper=new FirebaseHelper(this);
         SignInButton signInButtonGoogle=findViewById(R.id.login_button_Google);
         GoogleSignInOptions gso=new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().build();
         googleApiClient=new GoogleApiClient.Builder(this)
@@ -74,217 +72,35 @@ public class Login extends AppCompatActivity implements GoogleApiClient.OnConnec
                 startActivityForResult(intent, SIGN_IN_CODE_GOOGLE);
             }
         });
-        firebaseAuth=FirebaseAuth.getInstance();
-        firebaseDatabase=FirebaseDatabase.getInstance();
-        users=firebaseDatabase.getReference(Common.user_rider_tbl);
-        if(firebaseAuth.getUid()!=null)loginSuccess();
+
         btnSignIn=findViewById(R.id.btnSignin);
         btnLogIn=findViewById(R.id.btnLogin);
-        root=findViewById(R.id.root);
         btnSignIn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                showRegistrerDialog();
+                firebaseHelper.showRegistrerDialog();
             }
         });
         btnLogIn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                showLoginDialog();
+                firebaseHelper.showLoginDialog();
             }
         });
     }
-
     private void verifyGoogleAccount() {
-        OptionalPendingResult<GoogleSignInResult> opr=Auth.GoogleSignInApi.silentSignIn(googleApiClient);
+        OptionalPendingResult<GoogleSignInResult> opr= Auth.GoogleSignInApi.silentSignIn(googleApiClient);
         if (opr.isDone()){
             GoogleSignInResult result= opr.get();
-            if (result.isSuccess()) loginSuccess();
+            if (result.isSuccess()) firebaseHelper.loginSuccess();
         }
     }
-
     @Override
     protected void onStart() {
         super.onStart();
         verifyGoogleAccount();
     }
 
-    private void showLoginDialog(){
-        AlertDialog.Builder alertDialog=new AlertDialog.Builder(this);
-        alertDialog.setTitle("LOG IN");
-        alertDialog.setMessage("Please fill all fields");
-
-        LayoutInflater inflater=LayoutInflater.from(this);
-        View login_layout=inflater.inflate(R.layout.layout_login, null);
-        final MaterialEditText etEmail=login_layout.findViewById(R.id.etEmail);
-        final MaterialEditText etPassword=login_layout.findViewById(R.id.etPassword);
-
-        alertDialog.setView(login_layout);
-        alertDialog.setPositiveButton("LOG IN", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.dismiss();
-
-                btnLogIn.setEnabled(false);
-                if (TextUtils.isEmpty(etEmail.getText().toString())){
-                    Snackbar.make(root, "Pleace enter email address", Snackbar.LENGTH_SHORT).show();
-                    return;
-                }
-                if (TextUtils.isEmpty(etPassword.getText().toString())){
-                    Snackbar.make(root, "Pleace enter password", Snackbar.LENGTH_SHORT).show();
-                    return;
-                }
-                if (etPassword.getText().toString().length()<6){
-                    Snackbar.make(root, "Password too short", Snackbar.LENGTH_SHORT).show();
-                    return;
-                }
-                final SpotsDialog waitingDialog=new SpotsDialog(Login.this);
-                waitingDialog.show();
-                firebaseAuth.signInWithEmailAndPassword(etEmail.getText().toString(), etPassword.getText().toString()).addOnSuccessListener(new OnSuccessListener<AuthResult>() {
-                    @Override
-                    public void onSuccess(AuthResult authResult) {
-                        waitingDialog.dismiss();
-                        goToMainActivity();
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        waitingDialog.dismiss();
-                        Snackbar.make(root, "Failed"+e.getMessage(), Snackbar.LENGTH_SHORT).show();
-                        btnLogIn.setEnabled(true);
-                    }
-                });
-            }
-        });
-        alertDialog.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.dismiss();
-            }
-        });
-        alertDialog.show();
-    }
-    private void showRegistrerDialog(){
-        AlertDialog.Builder alertDialog=new AlertDialog.Builder(this);
-        alertDialog.setTitle("SIGN IN");
-        alertDialog.setMessage("Please fill all fields");
-
-        LayoutInflater inflater=LayoutInflater.from(this);
-        View registrer_layout=inflater.inflate(R.layout.layout_register, null);
-        final MaterialEditText etEmail=registrer_layout.findViewById(R.id.etEmail);
-        final MaterialEditText etPassword=registrer_layout.findViewById(R.id.etPassword);
-        final MaterialEditText etName=registrer_layout.findViewById(R.id.etName);
-        final MaterialEditText etPhone=registrer_layout.findViewById(R.id.etPhone);
-
-        alertDialog.setView(registrer_layout);
-        alertDialog.setPositiveButton("REGISTRER", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.dismiss();
-
-                if (TextUtils.isEmpty(etEmail.getText().toString())){
-                    Snackbar.make(root, "Pleace enter email address", Snackbar.LENGTH_SHORT).show();
-                    return;
-                }
-                if (TextUtils.isEmpty(etPassword.getText().toString())){
-                    Snackbar.make(root, "Pleace enter password", Snackbar.LENGTH_SHORT).show();
-                    return;
-                }
-                if (etPassword.getText().toString().length()<6){
-                    Snackbar.make(root, "Password too short", Snackbar.LENGTH_SHORT).show();
-                    return;
-                }
-                if (TextUtils.isEmpty(etName.getText().toString())){
-                    Snackbar.make(root, "Pleace enter name", Snackbar.LENGTH_SHORT).show();
-                    return;
-                }
-                if (TextUtils.isEmpty(etPhone.getText().toString())){
-                    Snackbar.make(root, "Pleace enter phone number", Snackbar.LENGTH_SHORT).show();
-                    return;
-                }
-                firebaseAuth.createUserWithEmailAndPassword(etEmail.getText().toString(), etPassword.getText().toString())
-                        .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
-                            @Override
-                            public void onSuccess(AuthResult authResult) {
-                                Rider user=new Rider();
-                                user.setEmail(etEmail.getText().toString());
-                                user.setName(etName.getText().toString());
-                                user.setPassword(etPassword.getText().toString());
-                                user.setPhone(etPhone.getText().toString());
-
-                                users.child(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                                        .setValue(user)
-                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                            @Override
-                                            public void onSuccess(Void aVoid) {
-                                                Snackbar.make(root, "Registered", Snackbar.LENGTH_SHORT).show();
-                                            }
-                                        }).addOnFailureListener(new OnFailureListener() {
-                                    @Override
-                                    public void onFailure(@NonNull Exception e) {
-                                        Snackbar.make(root, "Failed"+e.getMessage(), Snackbar.LENGTH_SHORT).show();
-                                    }
-                                });
-                            }
-                        }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Snackbar.make(root, "Failed"+e.getMessage(), Snackbar.LENGTH_SHORT).show();
-                    }
-                });
-            }
-        });
-        alertDialog.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.dismiss();
-            }
-        });
-        alertDialog.show();
-    }
-    private void showRegisterPhone(final Rider user){
-        AlertDialog.Builder alertDialog=new AlertDialog.Builder(this);
-        alertDialog.setTitle("SIGN IN");
-        alertDialog.setMessage("Please fill all fields");
-
-        LayoutInflater inflater=LayoutInflater.from(this);
-        View register_phone_layout=inflater.inflate(R.layout.layout_register_phone, null);
-        final MaterialEditText etPhone=register_phone_layout.findViewById(R.id.etPhone);
-
-        alertDialog.setView(register_phone_layout);
-        alertDialog.setPositiveButton("LOG IN", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.dismiss();
-                user.setEmail(account.getEmail());
-                user.setName(account.getDisplayName());
-                user.setPassword(null);
-                user.setPhone(etPhone.getText().toString());
-                users.child(account.getId())
-                        .setValue(user)
-                        .addOnSuccessListener(new OnSuccessListener<Void>() {
-                            @Override
-                            public void onSuccess(Void aVoid) {
-                                Snackbar.make(root, "Registered", Snackbar.LENGTH_SHORT).show();
-                                loginSuccess();
-                            }
-                        }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Snackbar.make(root, "Failed "+e.getMessage(), Snackbar.LENGTH_SHORT).show();
-
-                    }
-                });
-            }
-        });
-        alertDialog.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.dismiss();
-            }
-        });
-        alertDialog.show();
-    }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -293,40 +109,20 @@ public class Login extends AppCompatActivity implements GoogleApiClient.OnConnec
             GoogleSignInResult result=Auth.GoogleSignInApi.getSignInResultFromIntent(data);
             handleSignInResult(result);
         }
-
     }
     private void handleSignInResult(GoogleSignInResult result) {
         if (result.isSuccess()){
-            final Rider user=new Rider();
             account = result.getSignInAccount();
-
-            users.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    Rider post = dataSnapshot.child(account.getId()).getValue(Rider.class);
-
-                    if(post==null) showRegisterPhone(user);
-                    else loginSuccess();
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                }
-            });
-
-
-
-        }else Message.messageError(this, Errors.ERROR_LOGIN_GOOGLE);
-
+            firebaseHelper.registerByGoogleAccount(account);
+        }else{
+            Message.messageError(this, Errors.ERROR_LOGIN_GOOGLE);
+        }
     }
-    private void loginSuccess(){
-        goToMainActivity();
-    }
+
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
+        Message.messageError(this, Errors.ERROR_LOGIN_GOOGLE);
     }
 
     @Override
@@ -337,9 +133,5 @@ public class Login extends AppCompatActivity implements GoogleApiClient.OnConnec
     @Override
     protected void attachBaseContext(Context newBase) {
         super.attachBaseContext(CalligraphyContextWrapper.wrap(newBase));
-    }
-    private void goToMainActivity(){
-        startActivity(new Intent(Login.this, Home.class));
-        finish();
     }
 }

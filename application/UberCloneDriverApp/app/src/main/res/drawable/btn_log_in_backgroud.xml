@@ -6,7 +6,7 @@
         <shape android:shape="rectangle">
             <solid android:color="@color/btnLogIn"></solid>
             <stroke android:color="@color/btnLogIn" android:width="2dp"></stroke>
-            <corners android:radius="2dp"/>
+            <corners android:radius="16dp"/>
         </shape>
     </item>
 </ripple>

@@ -11,6 +11,6 @@
     <color name="secondaryTextColor">#ffffff</color>
 
     <color name="rippleEfectColor">#000</color>
-    <color name="btnSignIn">#5f43ff</color>
+    <color name="btnSignIn">#4a86ff</color>
     <color name="btnLogIn">#fff</color>
 </resources>

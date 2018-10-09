@@ -55,6 +55,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
@@ -164,8 +165,8 @@ public class Home extends AppCompatActivity
             public void onClick(View v) {
                 if (currentLat!=null && currentLng!=null) {
                     String id;
-                    if (account != null) id = account.getId();
-                    else id = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                    if (account!=null) id=account.getId();
+                    else id=FirebaseAuth.getInstance().getCurrentUser().getUid();
 
                     if (!driverFound)requestPickup(id);
                     else sendRequestToDriver();
@@ -490,6 +491,7 @@ public class Home extends AppCompatActivity
         mMap.getUiSettings().setZoomControlsEnabled(true);
         mMap.getUiSettings().setZoomGesturesEnabled(true);
         mMap.setInfoWindowAdapter(new CustomInfoWindow(this));
+        googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.uber_style_map));
     }
 
     @Override
