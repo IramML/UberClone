@@ -12,7 +12,7 @@
         android:layout_height="wrap_content">
     <com.rengwuxian.materialedittext.MaterialEditText
         android:id="@+id/etPhone"
-        android:hint="Phone"
+        android:hint="@string/phone"
         android:inputType="textEmailAddress"
         android:textColor="@color/colorPrimary"
         android:textColorHint="@color/colorPrimary"

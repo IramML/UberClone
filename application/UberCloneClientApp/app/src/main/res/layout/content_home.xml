@@ -61,7 +61,7 @@
                         android:layout_marginTop="10dp"
                         android:background="@drawable/btn_sign_in_background"
                         android:textColor="@android:color/white"
-                        android:text="Pickup request"/>
+                        android:text="@string/pickup_request"/>
                 </RelativeLayout>
             </android.support.v7.widget.CardView>
         </RelativeLayout>

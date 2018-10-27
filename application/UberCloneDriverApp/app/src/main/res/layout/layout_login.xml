@@ -11,7 +11,7 @@
         android:layout_height="wrap_content">
         <com.rengwuxian.materialedittext.MaterialEditText
             android:id="@+id/etEmail"
-            android:hint="Email"
+            android:hint="@string/email"
             android:inputType="textEmailAddress"
             android:textColor="@color/colorPrimary"
             android:textColorHint="@color/colorPrimary"
@@ -24,7 +24,7 @@
             app:met_primaryColor="@color/colorPrimary"/>
         <com.rengwuxian.materialedittext.MaterialEditText
             android:id="@+id/etPassword"
-            android:hint="Password"
+            android:hint="@string/password"
             android:inputType="textPassword"
             android:textColor="@color/colorPrimary"
             android:textColorHint="@color/colorPrimary"

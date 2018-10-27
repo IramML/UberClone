@@ -3,15 +3,20 @@ package com.iramml.uberclone.Messages;
 import android.content.Context;
 import android.widget.Toast;
 
+import com.iramml.uberclone.R;
+
 public class Message {
     public static void message(Context context, Messages message){
         String str="";
         switch (message){
             case PERMISSION_DENIED:
-                str="Permission denied";
+                str=context.getResources().getString(R.string.permission_denied);
                 break;
             case RATIONALE:
-                str="Permission is required to obtain location";
+                str=context.getResources().getString(R.string.permission_denied_location);
+                break;
+            case CANCELLED:
+                str=context.getResources().getString(R.string.cancelled);
                 break;
         }
         Toast.makeText(context, str, Toast.LENGTH_SHORT).show();
@@ -21,13 +26,13 @@ public class Message {
         String str="";
         switch (message){
             case ERROR_LOGIN_GOOGLE:
-                str="Could not login";
+                str=context.getResources().getString(R.string.could_not_login);
                 break;
             case NOT_SUPPORT:
-                str="This device is not supported";
+                str=context.getResources().getString(R.string.device_not_supported);
                 break;
             case WITHOUT_LOCATION:
-                str="Cannot get your location";
+                str=context.getResources().getString(R.string.cannot_get_location);
                 break;
         }
         Toast.makeText(context, str, Toast.LENGTH_SHORT).show();

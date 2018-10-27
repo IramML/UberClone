@@ -21,13 +21,13 @@
             android:layout_height="wrap_content">
             <TextView
                 android:id="@+id/tvPickupInfo"
-                android:text="Pickup here"
+                android:text="@string/pickup_here"
                 android:textStyle="bold"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
             <TextView
                 android:id="@+id/tvPickupSnippet"
-                android:text="Optional"
+                android:text="@string/optional"
                 android:textStyle="italic"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />

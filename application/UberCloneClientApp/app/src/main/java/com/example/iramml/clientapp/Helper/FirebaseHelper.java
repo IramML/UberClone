@@ -47,8 +47,8 @@ public class FirebaseHelper {
     }
     public void showLoginDialog(){
         AlertDialog.Builder alertDialog=new AlertDialog.Builder(activity);
-        alertDialog.setTitle("LOG IN");
-        alertDialog.setMessage("Please fill all fields");
+        alertDialog.setTitle(activity.getResources().getString(R.string.login));
+        alertDialog.setMessage(activity.getResources().getString(R.string.fill_fields));
 
         LayoutInflater inflater=LayoutInflater.from(activity);
         View login_layout=inflater.inflate(R.layout.layout_login, null);
@@ -56,22 +56,22 @@ public class FirebaseHelper {
         final MaterialEditText etPassword=login_layout.findViewById(R.id.etPassword);
 
         alertDialog.setView(login_layout);
-        alertDialog.setPositiveButton("LOG IN", new DialogInterface.OnClickListener() {
+        alertDialog.setPositiveButton(activity.getResources().getString(R.string.login), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 dialogInterface.dismiss();
 
                 //btnLogIn.setEnabled(false);
                 if (TextUtils.isEmpty(etEmail.getText().toString())){
-                    Snackbar.make(root, "Pleace enter email address", Snackbar.LENGTH_SHORT).show();
+                    Snackbar.make(root, activity.getResources().getString(R.string.enter_email), Snackbar.LENGTH_SHORT).show();
                     return;
                 }
                 if (TextUtils.isEmpty(etPassword.getText().toString())){
-                    Snackbar.make(root, "Pleace enter password", Snackbar.LENGTH_SHORT).show();
+                    Snackbar.make(root, activity.getResources().getString(R.string.enter_password), Snackbar.LENGTH_SHORT).show();
                     return;
                 }
                 if (etPassword.getText().toString().length()<6){
-                    Snackbar.make(root, "Password too short", Snackbar.LENGTH_SHORT).show();
+                    Snackbar.make(root, activity.getResources().getString(R.string.password_short), Snackbar.LENGTH_SHORT).show();
                     return;
                 }
                 final SpotsDialog waitingDialog=new SpotsDialog(activity);
@@ -86,13 +86,13 @@ public class FirebaseHelper {
                     @Override
                     public void onFailure(@NonNull Exception e) {
                         waitingDialog.dismiss();
-                        Snackbar.make(root, "Failed"+e.getMessage(), Snackbar.LENGTH_SHORT).show();
+                        Snackbar.make(root, activity.getResources().getString(R.string.failed)+e.getMessage(), Snackbar.LENGTH_SHORT).show();
                         //btnLogIn.setEnabled(true);
                     }
                 });
             }
         });
-        alertDialog.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+        alertDialog.setNegativeButton(activity.getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 dialogInterface.dismiss();
@@ -102,8 +102,8 @@ public class FirebaseHelper {
     }
     public void showRegistrerDialog(){
         AlertDialog.Builder alertDialog=new AlertDialog.Builder(activity);
-        alertDialog.setTitle("SIGN IN");
-        alertDialog.setMessage("Please fill all fields");
+        alertDialog.setTitle(activity.getResources().getString(R.string.signin));
+        alertDialog.setMessage(activity.getResources().getString(R.string.fill_fields));
 
         LayoutInflater inflater=LayoutInflater.from(activity);
         View registrer_layout=inflater.inflate(R.layout.layout_register, null);
@@ -113,29 +113,29 @@ public class FirebaseHelper {
         final MaterialEditText etPhone=registrer_layout.findViewById(R.id.etPhone);
 
         alertDialog.setView(registrer_layout);
-        alertDialog.setPositiveButton("REGISTRER", new DialogInterface.OnClickListener() {
+        alertDialog.setPositiveButton(activity.getResources().getString(R.string.register), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 dialogInterface.dismiss();
 
                 if (TextUtils.isEmpty(etEmail.getText().toString())){
-                    Snackbar.make(root, "Pleace enter email address", Snackbar.LENGTH_SHORT).show();
+                    Snackbar.make(root, activity.getResources().getString(R.string.enter_email), Snackbar.LENGTH_SHORT).show();
                     return;
                 }
                 if (TextUtils.isEmpty(etPassword.getText().toString())){
-                    Snackbar.make(root, "Please enter password", Snackbar.LENGTH_SHORT).show();
+                    Snackbar.make(root, activity.getResources().getString(R.string.enter_password), Snackbar.LENGTH_SHORT).show();
                     return;
                 }
                 if (etPassword.getText().toString().length()<6){
-                    Snackbar.make(root, "Password too short", Snackbar.LENGTH_SHORT).show();
+                    Snackbar.make(root, activity.getResources().getString(R.string.password_short), Snackbar.LENGTH_SHORT).show();
                     return;
                 }
                 if (TextUtils.isEmpty(etName.getText().toString())){
-                    Snackbar.make(root, "Pleace enter name", Snackbar.LENGTH_SHORT).show();
+                    Snackbar.make(root, activity.getResources().getString(R.string.enter_name), Snackbar.LENGTH_SHORT).show();
                     return;
                 }
                 if (TextUtils.isEmpty(etPhone.getText().toString())){
-                    Snackbar.make(root, "Pleace enter phone number", Snackbar.LENGTH_SHORT).show();
+                    Snackbar.make(root, activity.getResources().getString(R.string.enter_phone), Snackbar.LENGTH_SHORT).show();
                     return;
                 }
                 firebaseAuth.createUserWithEmailAndPassword(etEmail.getText().toString(), etPassword.getText().toString())
@@ -153,25 +153,25 @@ public class FirebaseHelper {
                                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                                             @Override
                                             public void onSuccess(Void aVoid) {
-                                                Snackbar.make(root, "Registered", Snackbar.LENGTH_SHORT).show();
+                                                Snackbar.make(root, activity.getResources().getString(R.string.registered), Snackbar.LENGTH_SHORT).show();
                                             }
                                         }).addOnFailureListener(new OnFailureListener() {
                                     @Override
                                     public void onFailure(@NonNull Exception e) {
-                                        Snackbar.make(root, "Failed"+e.getMessage(), Snackbar.LENGTH_SHORT).show();
+                                        Snackbar.make(root, activity.getResources().getString(R.string.failed)+e.getMessage(), Snackbar.LENGTH_SHORT).show();
                                     }
                                 });
                             }
                         }).addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Snackbar.make(root, "Failed"+e.getMessage(), Snackbar.LENGTH_SHORT).show();
+                        Snackbar.make(root, activity.getResources().getString(R.string.failed)+e.getMessage(), Snackbar.LENGTH_SHORT).show();
                     }
                 });
             }
         });
 
-        alertDialog.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+        alertDialog.setNegativeButton(activity.getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 dialogInterface.dismiss();
@@ -181,15 +181,15 @@ public class FirebaseHelper {
     }
     public void showRegisterPhone(final Rider user, final GoogleSignInAccount account){
         AlertDialog.Builder alertDialog=new AlertDialog.Builder(activity);
-        alertDialog.setTitle("SIGN IN");
-        alertDialog.setMessage("Please fill all fields");
+        alertDialog.setTitle(activity.getResources().getString(R.string.signin));
+        alertDialog.setMessage(activity.getResources().getString(R.string.fill_fields));
 
         LayoutInflater inflater=LayoutInflater.from(activity);
         View register_phone_layout=inflater.inflate(R.layout.layout_register_phone, null);
         final MaterialEditText etPhone=register_phone_layout.findViewById(R.id.etPhone);
 
         alertDialog.setView(register_phone_layout);
-        alertDialog.setPositiveButton("LOG IN", new DialogInterface.OnClickListener() {
+        alertDialog.setPositiveButton(activity.getResources().getString(R.string.login), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 dialogInterface.dismiss();
@@ -202,19 +202,19 @@ public class FirebaseHelper {
                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void aVoid) {
-                                Snackbar.make(root, "Registered", Snackbar.LENGTH_SHORT).show();
+                                Snackbar.make(root, activity.getResources().getString(R.string.registered), Snackbar.LENGTH_SHORT).show();
                                 loginSuccess();
                             }
                         }).addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Snackbar.make(root, "Failed "+e.getMessage(), Snackbar.LENGTH_SHORT).show();
+                        Snackbar.make(root, activity.getResources().getString(R.string.failed)+e.getMessage(), Snackbar.LENGTH_SHORT).show();
 
                     }
                 });
             }
         });
-        alertDialog.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+        alertDialog.setNegativeButton(activity.getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 dialogInterface.dismiss();

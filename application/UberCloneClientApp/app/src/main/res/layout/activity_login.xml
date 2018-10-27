@@ -24,14 +24,14 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="RIDER"
+            android:text="@string/tv_login_title"
             android:textColor="@android:color/white"
             android:textSize="32sp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="UBER CLONE"
+            android:text="@string/tv_login_subtitle"
             android:textColor="@android:color/white"
             android:textSize="16sp" />
     </LinearLayout>
@@ -59,28 +59,29 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.501"
             app:layout_constraintStart_toStartOf="parent" />
+
         <Button
-            android:background="@drawable/btn_sign_in_background"
             android:id="@+id/btnSignin"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
             android:layout_marginEnd="16dp"
             android:layout_marginStart="16dp"
-            android:layout_marginBottom="4dp"
-            android:textColor="#fff"
-            android:text="Sign in" />
+            android:layout_marginTop="4dp"
+            android:background="@drawable/btn_sign_in_background"
+            android:text="@string/signin"
+            android:textColor="#fff" />
 
         <Button
             android:id="@+id/btnLogin"
-            android:background="@drawable/btn_log_in_backgroud"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginBottom="16dp"
             android:layout_marginEnd="16dp"
             android:layout_marginStart="16dp"
-            android:layout_marginBottom="16dp"
-            android:text="Log in" />
+            android:layout_marginTop="4dp"
+            android:background="@drawable/btn_log_in_backgroud"
+            android:text="@string/login" />
 
     </LinearLayout>
 

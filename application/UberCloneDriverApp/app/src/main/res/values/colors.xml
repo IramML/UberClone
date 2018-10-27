@@ -13,4 +13,5 @@
     <color name="rippleEfectColor">#000</color>
     <color name="btnSignIn">#4a86ff</color>
     <color name="btnLogIn">#fff</color>
+    <color name="btnDeclinePickup">#ba0000</color>
 </resources>

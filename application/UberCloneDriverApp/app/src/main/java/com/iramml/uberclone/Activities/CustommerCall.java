@@ -6,8 +6,11 @@ import android.media.MediaPlayer;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
+import android.view.View;
 import android.view.animation.LinearInterpolator;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,6 +28,12 @@ import com.iramml.uberclone.Common.Common;
 import com.iramml.uberclone.GoogleAPIRoutesRequest.GoogleMapsAPIRequest;
 import com.iramml.uberclone.Interfaces.IFCMService;
 import com.iramml.uberclone.Interfaces.googleAPIInterface;
+import com.iramml.uberclone.Messages.Message;
+import com.iramml.uberclone.Messages.Messages;
+import com.iramml.uberclone.Model.FCMResponse;
+import com.iramml.uberclone.Model.Notification;
+import com.iramml.uberclone.Model.Sender;
+import com.iramml.uberclone.Model.Token;
 import com.iramml.uberclone.R;
 import com.iramml.uberclone.Retrofit.RetrofitClient;
 
@@ -36,19 +45,30 @@ import retrofit2.Response;
 
 public class CustommerCall extends AppCompatActivity {
     TextView tvTime, tvAddress, tvDistance;
-
+    Button btnAccept, btnDecline;
     MediaPlayer mediaPlayer;
 
     googleAPIInterface mService;
+    IFCMService mFCMService;
+    String riderID;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_custommer_call);
         mService=Common.getGoogleAPI();
+        mFCMService=Common.getFCMService();
         tvTime=findViewById(R.id.tvTime);
         tvDistance=findViewById(R.id.tvDistance);
         tvAddress=findViewById(R.id.tvAddress);
+        btnDecline=findViewById(R.id.btnDecline);
+        btnAccept=findViewById(R.id.btnAccept);
 
+        btnDecline.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(!TextUtils.isEmpty(riderID)) cancelRequest(riderID);
+            }
+        });
         mediaPlayer=MediaPlayer.create(this, R.raw.ringtone);
         mediaPlayer.setLooping(true);
         mediaPlayer.start();
@@ -56,10 +76,33 @@ public class CustommerCall extends AppCompatActivity {
         if (getIntent()!=null){
             double lat=getIntent().getDoubleExtra("lat", -1.0);
             double lng=getIntent().getDoubleExtra("lng", -1.0);
-
+            riderID=getIntent().getStringExtra("rider");
             getDirection(lat, lng);
         }else finish();
     }
+
+    private void cancelRequest(String riderID) {
+        Token token=new Token(riderID);
+
+        Notification notification=new Notification("Notice!", "Driver has cancelled your request");
+        Sender sender=new Sender(token.getToken(), notification);
+
+        mFCMService.sendMessage(sender).enqueue(new Callback<FCMResponse>() {
+            @Override
+            public void onResponse(Call<FCMResponse> call, Response<FCMResponse> response) {
+                if(response.body().success==1){
+                    Message.message(getApplicationContext(), Messages.CANCELLED);
+                    finish();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<FCMResponse> call, Throwable t) {
+
+            }
+        });
+    }
+
     private void getDirection(double lat, double lng){
 
         final String requestApi;

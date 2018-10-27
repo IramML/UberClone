@@ -215,7 +215,8 @@ public class Home extends AppCompatActivity
                     Token token=postSnapShot.getValue(Token.class);
                     String json_lat_lng=new Gson().toJson(new LatLng(currentLat, currentLng));
 
-                    Notification data=new Notification("IRAMML", json_lat_lng);
+                    String riderToken=FirebaseInstanceId.getInstance().getToken();
+                    Notification data=new Notification(riderToken, json_lat_lng);
                     Sender content=new Sender(token.getToken(), data);
 
                     ifcmService.sendMessage(content).enqueue(new Callback<FCMResponse>() {
@@ -245,10 +246,10 @@ public class Home extends AppCompatActivity
         GeoFire mGeofire=new GeoFire(dbRequest);
         mGeofire.setLocation(uid, new GeoLocation(currentLat, currentLng));
         if (currentLocationMarket.isVisible())currentLocationMarket.remove();
-        currentLocationMarket=mMap.addMarker(new MarkerOptions().title("Pickup here").snippet("").position(new LatLng(currentLat, currentLng))
+        currentLocationMarket=mMap.addMarker(new MarkerOptions().title(getResources().getString(R.string.pickup_here)).snippet("").position(new LatLng(currentLat, currentLng))
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
         currentLocationMarket.showInfoWindow();
-        btnRequestPickup.setText("Getting your UBER...");
+        btnRequestPickup.setText(getResources().getString(R.string.getting_uber));
         findDriver();
     }
 
@@ -264,7 +265,7 @@ public class Home extends AppCompatActivity
                 if (!driverFound){
                     driverFound=true;
                     driverID=key;
-                    btnRequestPickup.setText("Call driver");
+                    btnRequestPickup.setText(getApplicationContext().getResources().getString(R.string.call_driver));
                     Toast.makeText(getApplicationContext(), key, Toast.LENGTH_SHORT).show();
                 }
             }
@@ -406,7 +407,7 @@ public class Home extends AppCompatActivity
             if (currentLocationMarket != null) currentLocationMarket.remove();
 
             currentLocationMarket = mMap.addMarker(new MarkerOptions().position(currentLocation)
-                    .title("You")
+                    .title(getResources().getString(R.string.you))
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_current_location)));
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(currentLat, currentLng), 15.0f));
 
@@ -421,7 +422,7 @@ public class Home extends AppCompatActivity
     private void loadAllAvailableDriver() {
         mMap.clear();
 
-        mMap.addMarker(new MarkerOptions().position(new LatLng(currentLat, currentLng)).title("You"));
+        mMap.addMarker(new MarkerOptions().position(new LatLng(currentLat, currentLng)).title(getResources().getString(R.string.you)));
 
 
         DatabaseReference driverLocation=FirebaseDatabase.getInstance().getReference(Common.driver_tbl);
