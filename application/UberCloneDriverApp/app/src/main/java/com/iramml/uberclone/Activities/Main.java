@@ -274,7 +274,7 @@ public class Main extends AppCompatActivity implements OnMapReadyCallback, Googl
         try{
             requestApi="https://maps.googleapis.com/maps/api/directions/json?mode=driving&" +
                     "transit_routing_preference=less_driving&origin="+Common.currentLat+","+Common.currentLng+"&" +
-                    "destination="+destination;
+                    "destination="+destination+"&key="+getResources().getString(R.string.google_direction_api);
             Log.d("URL_MAPS", requestApi);
             mService.getPath(requestApi).enqueue(new Callback<String>() {
                 @Override
@@ -500,11 +500,7 @@ public class Main extends AppCompatActivity implements OnMapReadyCallback, Googl
         }
     }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-        location.stopUpdateLocation();
-    }
+
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
@@ -520,5 +516,17 @@ public class Main extends AppCompatActivity implements OnMapReadyCallback, Googl
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        location.inicializeLocation();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        location.stopUpdateLocation();
     }
 }

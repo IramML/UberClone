@@ -40,17 +40,22 @@
         <activity
             android:name=".Activities.Main"
             android:label="@string/title_activity_main" />
-        <activity android:name=".Activities.CustommerCall"></activity>
+        <activity android:name=".Activities.CustommerCall" />
+
         <service android:name=".Service.FirebaseIdService">
             <intent-filter>
-                <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
             </intent-filter>
         </service>
         <service android:name=".Service.firebaseMessaging">
             <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
+
+        <activity
+            android:name=".Activities.DriverTracking"
+            android:label="@string/title_activity_driver_tracking"></activity>
     </application>
 
 </manifest>

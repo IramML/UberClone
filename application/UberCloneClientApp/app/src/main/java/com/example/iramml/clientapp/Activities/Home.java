@@ -98,7 +98,7 @@ public class Home extends AppCompatActivity
 
     boolean driverFound=false;
     String driverID="";
-    int radius=1;// km
+    int radius=1; // km
     int distance=1;
     private static final int LIMIT=3;
 
