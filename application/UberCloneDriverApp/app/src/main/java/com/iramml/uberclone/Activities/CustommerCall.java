@@ -74,6 +74,7 @@ public class CustommerCall extends AppCompatActivity {
                 Intent intent=new Intent(CustommerCall.this, DriverTracking.class);
                 intent.putExtra("lat", lat);
                 intent.putExtra("lng", lng);
+                intent.putExtra("riderID", riderID);
                 startActivity(intent);
                 finish();
             }
@@ -117,10 +118,10 @@ public class CustommerCall extends AppCompatActivity {
                     Gson gson = new Gson();
                     GoogleMapsAPIRequest requestObject = gson.fromJson(response.body().toString(), GoogleMapsAPIRequest.class);
                     Log.d("RESPONSE", response.body().toString());
-/*
+
                     tvDistance.setText(requestObject.routes.get(0).legs.get(0).distance.text);
                     tvTime.setText(requestObject.routes.get(0).legs.get(0).duration.text);
-                    tvAddress.setText(requestObject.routes.get(0).legs.get(0).end_address);*/
+                    tvAddress.setText(requestObject.routes.get(0).legs.get(0).end_address);
                 }
 
                 @Override

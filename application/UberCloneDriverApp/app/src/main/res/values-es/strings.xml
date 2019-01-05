@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">UberClone</string>
     <string name="title_activity_main">Map</string>
-    <string name="google_direction_api">AIzaSyDUUCshvAeC-FyxOvtQLaxBxfgOL35OKlg</string>
+    <string name="google_direction_api">AIzaSyDcUwk5nBq2FTZsbWDVt1gQKW1MZYw5Ioo</string>
     <string name="tv_login_title">CONDUCTOR</string>
     <string name="tv_login_subtitle">UBER CLONE</string>
     <string name="login">INICIAR SESIÓN</string>

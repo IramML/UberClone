@@ -65,6 +65,7 @@ import com.iramml.uberclone.Interfaces.locationListener;
 import com.iramml.uberclone.Messages.Errors;
 import com.iramml.uberclone.Messages.Message;
 import com.iramml.uberclone.Model.Token;
+import com.iramml.uberclone.Model.User;
 import com.iramml.uberclone.R;
 import com.iramml.uberclone.Util.Location;
 
@@ -165,6 +166,7 @@ public class Main extends AppCompatActivity implements OnMapReadyCallback, Googl
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         verifyGoogleAccount();
+        loadDriverInformation();
         onlineRef=FirebaseDatabase.getInstance().getReference().child(".info/connected");
         currentUserRef=FirebaseDatabase.getInstance().getReference(Common.driver_tbl);
         onlineRef.addValueEventListener(new ValueEventListener() {
@@ -238,6 +240,21 @@ public class Main extends AppCompatActivity implements OnMapReadyCallback, Googl
         updateFirebaseToken();
     }
 
+    private void loadDriverInformation(){
+        FirebaseDatabase.getInstance().getReference(Common.user_driver_tbl)
+                .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        Common.currentUser = dataSnapshot.getValue(User.class);
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+    }
     private void verifyGoogleAccount() {
         GoogleSignInOptions gso=new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().build();
         mGoogleApiClient=new GoogleApiClient.Builder(this)
