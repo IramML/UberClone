@@ -117,7 +117,7 @@ public class DriverTracking extends AppCompatActivity implements OnMapReadyCallb
         //add rider location
         riderMarker=mMap.addCircle(new CircleOptions()
                 .center(new LatLng(riderLat, riderLng))
-                .radius(10)
+                .radius(50)
                 .strokeColor(Color.BLUE)
                 .fillColor(0x220000FF)
                 .strokeWidth(5f));

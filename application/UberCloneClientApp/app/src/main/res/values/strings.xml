@@ -42,4 +42,7 @@
     <string name="call_driver">Call driver</string>
     <string name="getting_uber">Getting your UBER&#8230;</string>
     <string name="you">You</string>
+
+    <string name="channel_arrived">Arrived</string>
+    <string name="channel_arrived_descrition">Driver notifications</string>
 </resources>

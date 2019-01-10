@@ -238,8 +238,23 @@ public class Main extends AppCompatActivity implements OnMapReadyCallback, Googl
         setUpLocation();
         mService= Common.getGoogleAPI();
         updateFirebaseToken();
+        loadUser();
     }
+    private void loadUser(){
+        FirebaseDatabase.getInstance().getReference(Common.user_driver_tbl)
+                .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        Common.currentUser=dataSnapshot.getValue(User.class);
+                    }
 
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
+    }
     private void loadDriverInformation(){
         FirebaseDatabase.getInstance().getReference(Common.user_driver_tbl)
                 .child(FirebaseAuth.getInstance().getCurrentUser().getUid())

@@ -84,7 +84,7 @@ public class CustommerCall extends AppCompatActivity {
     private void cancelRequest(String riderID) {
         Token token=new Token(riderID);
 
-        Notification notification=new Notification("Notice!", "Driver has cancelled your request");
+        Notification notification=new Notification("Cancel", "Driver has cancelled your request");
         Sender sender=new Sender(token.getToken(), notification);
 
         mFCMService.sendMessage(sender).enqueue(new Callback<FCMResponse>() {

@@ -40,7 +40,7 @@ public class Location {
     }
     private void inicializeLocationRequest(){
         locationRequest=new LocationRequest();
-        locationRequest.setInterval(5000);
+        locationRequest.setInterval(10000);
         locationRequest.setFastestInterval(3000);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
