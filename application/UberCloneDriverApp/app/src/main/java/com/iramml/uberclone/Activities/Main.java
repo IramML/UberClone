@@ -31,6 +31,7 @@ import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.places.AutocompleteFilter;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
@@ -58,6 +59,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.gson.Gson;
+import com.google.maps.android.SphericalUtil;
 import com.iramml.uberclone.Common.Common;
 import com.iramml.uberclone.GoogleAPIRoutesRequest.GoogleMapsAPIRequest;
 import com.iramml.uberclone.Interfaces.googleAPIInterface;
@@ -95,6 +97,7 @@ public class Main extends AppCompatActivity implements OnMapReadyCallback, Googl
     SwitchCompat locationSwitch=null;
 
     private PlaceAutocompleteFragment places;
+    AutocompleteFilter typeFilter;
 
     private List<LatLng> polyLineList;
     private Marker carMarker;
@@ -202,7 +205,7 @@ public class Main extends AppCompatActivity implements OnMapReadyCallback, Googl
                     location.stopUpdateLocation();
                     currentLocationMarket.remove();
                     mMap.clear();
-                    //handler.removeCallbacks(drawPathRunnable);
+                    handler.removeCallbacks(drawPathRunnable);
                     if (currentLocationMarket!=null)currentLocationMarket.remove();
                 }
             }
@@ -226,6 +229,10 @@ public class Main extends AppCompatActivity implements OnMapReadyCallback, Googl
                 Toast.makeText(getApplicationContext(), status.toString(), Toast.LENGTH_SHORT).show();
             }
         });
+        typeFilter=new AutocompleteFilter.Builder()
+                .setTypeFilter(AutocompleteFilter.TYPE_FILTER_ADDRESS)
+                .setTypeFilter(3)
+                .build();
         polyLineList=new ArrayList<>();
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -458,6 +465,19 @@ public class Main extends AppCompatActivity implements OnMapReadyCallback, Googl
     private void displayLocation(){
         if (Common.currentLat!=null && Common.currentLng!=null){
             if (locationSwitch.isChecked()) {
+                LatLng center=new LatLng(Common.currentLat, Common.currentLng);
+                LatLng northSide=SphericalUtil.computeOffset(center, 100000, 0);
+                LatLng southSide=SphericalUtil.computeOffset(center, 100000, 180);
+
+                LatLngBounds bounds=LatLngBounds.builder()
+                        .include(northSide)
+                        .include(southSide)
+                        .build();
+                places.setBoundsBias(bounds);
+                places.setFilter(typeFilter);
+
+
+
                 String user="";
                 if (account!=null)user=account.getId();
                 else user=FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -470,6 +490,7 @@ public class Main extends AppCompatActivity implements OnMapReadyCallback, Googl
                                 if (currentLocationMarket != null) currentLocationMarket.remove();
 
                                 currentLocationMarket = mMap.addMarker(new MarkerOptions().position(currentLocation)
+                                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker))
                                         .title("Your Location"));
                                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(Common.currentLat, Common.currentLng), 15.0f));
 

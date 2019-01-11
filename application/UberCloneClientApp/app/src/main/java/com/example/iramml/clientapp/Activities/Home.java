@@ -50,6 +50,7 @@ import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.places.AutocompleteFilter;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
@@ -59,6 +60,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -70,6 +72,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.gson.Gson;
+import com.google.maps.android.SphericalUtil;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -80,7 +83,7 @@ public class Home extends AppCompatActivity
 
     Location location=null;
     private GoogleMap mMap;
-    Marker riderMarket;
+    Marker riderMarket, destinationMarker;
     GoogleSignInAccount account;
 
     DatabaseReference drivers;
@@ -111,6 +114,7 @@ public class Home extends AppCompatActivity
     DatabaseReference driversAvailable;
 
     PlaceAutocompleteFragment placeLocation, placeDestination;
+    AutocompleteFilter typeFilter;
     String mPlaceLocation, mPlaceDestination;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -178,6 +182,10 @@ public class Home extends AppCompatActivity
         });
         placeDestination=(PlaceAutocompleteFragment)getFragmentManager().findFragmentById(R.id.placeDestination);
         placeLocation=(PlaceAutocompleteFragment)getFragmentManager().findFragmentById(R.id.placeLocation);
+        typeFilter=new AutocompleteFilter.Builder()
+                .setTypeFilter(AutocompleteFilter.TYPE_FILTER_ADDRESS)
+                .setTypeFilter(3)
+                .build();
 
         placeLocation.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
@@ -186,7 +194,7 @@ public class Home extends AppCompatActivity
                 mMap.clear();
 
                 riderMarket=mMap.addMarker(new MarkerOptions().position(place.getLatLng())
-                                            .icon(BitmapDescriptorFactory.defaultMarker())
+                                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker))
                                             .title("Pickup Here"));
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(), 15.0f));
             }
@@ -201,10 +209,11 @@ public class Home extends AppCompatActivity
             public void onPlaceSelected(Place place) {
                 mPlaceDestination=place.getAddress().toString();
                 mMap.addMarker(new MarkerOptions().position(place.getLatLng())
-                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.destination_marker))
+                                .title("Destination"));
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(), 15.0f));
 
-                BottomSheetRiderFragment mBottomSheet=BottomSheetRiderFragment.newInstance(mPlaceLocation, mPlaceDestination);
+                BottomSheetRiderFragment mBottomSheet=BottomSheetRiderFragment.newInstance(mPlaceLocation, mPlaceDestination, false);
                 mBottomSheet.show(getSupportFragmentManager(), mBottomSheet.getTag());
             }
 
@@ -442,17 +451,26 @@ public class Home extends AppCompatActivity
 
     private void displayLocation(){
         if (currentLat!=null && currentLng!=null){
+            LatLng center=new LatLng(currentLat, currentLng);
+            LatLng northSide=SphericalUtil.computeOffset(center, 100000, 0);
+            LatLng southSide=SphericalUtil.computeOffset(center, 100000, 180);
+
+            LatLngBounds bounds=LatLngBounds.builder()
+                    .include(northSide)
+                    .include(southSide)
+                    .build();
+            placeLocation.setBoundsBias(bounds);
+            placeLocation.setFilter(typeFilter);
+
+            placeDestination.setBoundsBias(bounds);
+            placeDestination.setFilter(typeFilter);
+
             String user="";
             if (account!=null)user=account.getId();
             else user= FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-            LatLng currentLocation = new LatLng(currentLat, currentLng);
-            if (riderMarket != null) riderMarket.remove();
 
-            riderMarket = mMap.addMarker(new MarkerOptions().position(currentLocation)
-                    .title(getResources().getString(R.string.you))
-                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_current_location)));
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(currentLat, currentLng), 15.0f));
+
 
             loadAllAvailableDriver(new LatLng(currentLat, currentLng));
 
@@ -465,7 +483,10 @@ public class Home extends AppCompatActivity
     private void loadAllAvailableDriver(final LatLng location) {
         mMap.clear();
 
-        mMap.addMarker(new MarkerOptions().position(location).title(getResources().getString(R.string.you)));
+        riderMarket = mMap.addMarker(new MarkerOptions().position(location)
+                .title(getResources().getString(R.string.you))
+                .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker)));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(location, 15.0f));
 
 
         DatabaseReference driverLocation=FirebaseDatabase.getInstance().getReference(Common.driver_tbl);
@@ -536,6 +557,22 @@ public class Home extends AppCompatActivity
         mMap.getUiSettings().setZoomGesturesEnabled(true);
         mMap.setInfoWindowAdapter(new CustomInfoWindow(this));
         googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.uber_style_map));
+
+        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng latLng) {
+                if(destinationMarker!=null)
+                    destinationMarker.remove();
+                destinationMarker=mMap.addMarker(new MarkerOptions().position(latLng)
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.destination_marker))
+                        .title("Destination"));
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15.0f));
+
+                BottomSheetRiderFragment mBottomSheet=BottomSheetRiderFragment.newInstance(String.format("%f,%f", currentLat, currentLng),
+                        String.format("%f,%f",latLng.latitude, latLng.longitude), true);
+                mBottomSheet.show(getSupportFragmentManager(), mBottomSheet.getTag());
+            }
+        });
     }
 
     @Override

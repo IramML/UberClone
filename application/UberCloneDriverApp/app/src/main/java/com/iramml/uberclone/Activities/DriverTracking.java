@@ -32,6 +32,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
@@ -122,6 +123,7 @@ public class DriverTracking extends AppCompatActivity implements OnMapReadyCallb
                 .fillColor(0x220000FF)
                 .strokeWidth(5f));
 
+        googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.uber_style_map));
         geoFire = new GeoFire(FirebaseDatabase.getInstance().getReference(Common.driver_tbl));
         GeoQuery geoQuery = geoFire.queryAtLocation(new GeoLocation(riderLat, riderLng), 0.05f);
         geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
@@ -180,7 +182,7 @@ public class DriverTracking extends AppCompatActivity implements OnMapReadyCallb
         //add driver location
         if(driverMarker!=null)driverMarker.remove();
         driverMarker=mMap.addMarker(new MarkerOptions().position(new LatLng(Common.currentLat, Common.currentLng))
-        .title("You").icon(BitmapDescriptorFactory.defaultMarker()));
+        .title("You").icon(BitmapDescriptorFactory.fromResource(R.drawable.marker)));
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(Common.currentLat, Common.currentLng), 14f));
 
         //remove route

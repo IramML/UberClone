@@ -1,7 +1,9 @@
 package com.example.iramml.clientapp.Common;
 
 import com.example.iramml.clientapp.Interfaces.IFCMService;
+import com.example.iramml.clientapp.Retrofit.GoogleMapsAPI;
 import com.example.iramml.clientapp.Retrofit.IFCMClient;
+import com.example.iramml.clientapp.Retrofit.IGoogleAPI;
 import com.example.iramml.clientapp.Retrofit.RetrofitClient;
 
 public class Common {
@@ -13,7 +15,20 @@ public class Common {
     public static String token_tbl="Tokens";
 
     public static final String fcmURL="https://fcm.googleapis.com/";
+    public static final String googleAPIUrl="https://maps.googleapis.com";
+
+    private static double baseFare=2.55;
+    private static double timeRate=0.35;
+    private static double distanceRate=1.75;
+
+    public static double getPrice(double km, int min){
+        return (baseFare+(timeRate*min)+(distanceRate*km));
+    }
+
     public static IFCMService getFCMService(){
         return IFCMClient.getClient(fcmURL).create(IFCMService.class);
+    }
+    public static IGoogleAPI getGoogleService(){
+        return GoogleMapsAPI.getClient(googleAPIUrl).create(IGoogleAPI.class);
     }
 }

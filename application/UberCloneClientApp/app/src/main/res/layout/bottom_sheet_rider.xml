@@ -22,7 +22,6 @@
             <TextView
                 android:id="@+id/txtLocation"
                 android:layout_marginTop="10dp"
-                android:text="Location"
                 android:layout_weight="9"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content" />
@@ -42,7 +41,6 @@
             <TextView
                 android:id="@+id/txtDestination"
                 android:layout_marginTop="10dp"
-                android:text="Destination"
                 android:layout_weight="9"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content" />
@@ -61,7 +59,6 @@
             <TextView
                 android:id="@+id/txtCalculate"
                 android:layout_marginTop="10dp"
-                android:text="10km +10 mins = $100"
                 android:layout_weight="9"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content" />
