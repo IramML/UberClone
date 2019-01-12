@@ -2,6 +2,7 @@ package com.iramml.uberclone.Activities;
 
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
@@ -9,6 +10,8 @@ import android.support.annotation.Nullable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.firebase.geofire.GeoFire;
@@ -50,8 +53,10 @@ import com.iramml.uberclone.Model.Notification;
 import com.iramml.uberclone.Model.Sender;
 import com.iramml.uberclone.Model.Token;
 import com.iramml.uberclone.R;
+import com.iramml.uberclone.TripDetail;
 import com.iramml.uberclone.Util.Location;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -82,6 +87,10 @@ public class DriverTracking extends AppCompatActivity implements OnMapReadyCallb
 
     GeoFire geoFire;
     String riderID;
+
+    Button btnStartTrip;
+
+    LatLng pickupLocation;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -109,6 +118,78 @@ public class DriverTracking extends AppCompatActivity implements OnMapReadyCallb
 
             }
         });
+        btnStartTrip=(Button)findViewById(R.id.btnStartTrip);
+        btnStartTrip.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(btnStartTrip.getText().equals("START TRIP")){
+                    pickupLocation=new LatLng(Common.currentLat, Common.currentLng);
+                    btnStartTrip.setText("DROP OFF HERE");
+                }else if(btnStartTrip.getText().equals("DROP OFF HERE")){
+                    calculateCashFree(pickupLocation, new LatLng(Common.currentLat, Common.currentLng));
+                }
+            }
+        });
+    }
+
+    private void calculateCashFree(final LatLng pickupLocation, LatLng latLng) {
+        String requestApi = null;
+        try {
+            requestApi = "https://maps.googleapis.com/maps/api/directions/json?" +
+                    "mode=driving&" +
+                    "transit_routing_preference=less_driving&" +
+                    "origin=" + pickupLocation.latitude + "," + pickupLocation.longitude + "&" +
+                    "destination=" + latLng.latitude + "," + latLng.longitude + "&" +
+                    "key=" + getResources().getString(R.string.google_direction_api);
+            mService.getPath(requestApi)
+                    .enqueue(new Callback<String>() {
+                        @Override
+                        public void onResponse(Call<String> call, Response<String> response) {
+                            try {
+                                JSONObject jsonObject=new JSONObject(response.body().toString());
+                                JSONArray routes=jsonObject.getJSONArray("routes");
+
+                                JSONObject object=routes.getJSONObject(0);
+                                JSONArray legs=object.getJSONArray("legs");
+
+                                JSONObject legsObject=legs.getJSONObject(0);
+
+                                JSONObject distance=legsObject.getJSONObject("distance");
+                                String distanceText=distance.getString("text");
+
+                                Double distanceValue=Double.parseDouble(distanceText.replaceAll("[^0-9\\\\.]+", ""));
+
+                                JSONObject timeObject=legsObject.getJSONObject("duration");
+                                String timeText=timeObject.getString("text");
+
+                                Double timeValue=Double.parseDouble(timeText.replaceAll("[^0-9\\\\.]+", ""));
+
+                                Intent intent = new Intent(DriverTracking.this, TripDetail.class);
+                                intent.putExtra("start_address", legsObject.getString("start_address"));
+                                intent.putExtra("end_address", legsObject.getString("end_address"));
+                                intent.putExtra("time", String.valueOf(timeValue));
+                                intent.putExtra("distance", String.valueOf(distanceValue));
+                                intent.putExtra("total", Common.formulaPrice(distanceValue, timeValue));
+                                intent.putExtra("location_start", String.format("%f,%f", pickupLocation.latitude, pickupLocation.longitude));
+                                intent.putExtra("location_end", String.format("%f,%f", Common.currentLat, Common.currentLng));
+
+                                startActivity(intent);
+                                finish();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
+                        }
+
+                        @Override
+                        public void onFailure(Call<String> call, Throwable t) {
+                            Toast.makeText(DriverTracking.this, "" + t.getMessage(), Toast.LENGTH_SHORT).show();
+
+                        }
+                    });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -130,6 +211,7 @@ public class DriverTracking extends AppCompatActivity implements OnMapReadyCallb
             @Override
             public void onKeyEntered(String key, GeoLocation location) {
                 sendArrivedNotification(riderID);
+                btnStartTrip.setEnabled(true);
             }
 
             @Override

@@ -82,7 +82,14 @@
             android:layout_marginTop="4dp"
             android:background="@drawable/btn_log_in_backgroud"
             android:text="@string/login" />
-
+        <TextView
+            android:id="@+id/txtForgotPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="FORGOT PASSWORD? TAP HERE"
+            android:textAlignment="center"
+            android:textColor="@android:color/white"
+            android:textSize="12sp"/>
     </LinearLayout>
 
 

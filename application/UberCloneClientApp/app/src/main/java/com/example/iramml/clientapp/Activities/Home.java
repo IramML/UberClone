@@ -468,7 +468,20 @@ public class Home extends AppCompatActivity
             String user="";
             if (account!=null)user=account.getId();
             else user= FirebaseAuth.getInstance().getCurrentUser().getUid();
+            //presence system
+            driversAvailable = FirebaseDatabase.getInstance().getReference(Common.driver_tbl);
+            driversAvailable.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    //if have change from drivers table, we will reload all drivers available
+                    loadAllAvailableDriver(new LatLng(currentLat, currentLng));
+                }
 
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
 
 
 
@@ -537,7 +550,7 @@ public class Home extends AppCompatActivity
 
             @Override
             public void onGeoQueryReady() {
-                if (distance<=3){
+                if (distance<=LIMIT){
                     distance++;
                     loadAllAvailableDriver(location);
                 }

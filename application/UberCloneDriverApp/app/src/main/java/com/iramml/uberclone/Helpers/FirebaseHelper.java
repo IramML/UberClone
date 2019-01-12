@@ -12,8 +12,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -21,6 +23,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.iramml.uberclone.Activities.DrawerHome;
 import com.iramml.uberclone.Activities.Main;
 import com.iramml.uberclone.Common.Common;
 import com.iramml.uberclone.Model.User;
@@ -226,7 +229,7 @@ public class FirebaseHelper {
         goToMainActivity();
     }
     private void goToMainActivity(){
-        activity.startActivity(new Intent(activity, Main.class));
+        activity.startActivity(new Intent(activity, DrawerHome.class));
         activity.finish();
     }
     public void registerByGoogleAccount(final GoogleSignInAccount account){
@@ -245,5 +248,45 @@ public class FirebaseHelper {
 
             }
         });
+    }
+    public void showDialogForgotPwd() {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(activity);
+        alertDialog.setTitle("FORGOT PASSWORD");
+        alertDialog.setMessage("Please enter your email address");
+        LayoutInflater inflater = LayoutInflater.from(activity);
+        View forgot_pwd_layout = inflater.inflate(R.layout.layout_forgot_pwd,null);
+        final MaterialEditText edtEmail = (MaterialEditText)forgot_pwd_layout.findViewById(R.id.edtEmail);
+        alertDialog.setView(forgot_pwd_layout);
+        //set button
+        alertDialog.setPositiveButton("RESET", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(final DialogInterface dialogInterface, int i) {
+                final SpotsDialog waitingDialog = new SpotsDialog(activity);
+                waitingDialog.show();
+                firebaseAuth.sendPasswordResetEmail(edtEmail.getText().toString().trim())
+                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                dialogInterface.dismiss();
+                                waitingDialog.dismiss();
+                                Snackbar.make(root,"Reset password link has been sent",Snackbar.LENGTH_LONG).show();
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        dialogInterface.dismiss();
+                        waitingDialog.dismiss();
+                        Snackbar.make(root,""+e.getMessage(),Snackbar.LENGTH_LONG).show();
+                    }
+                });
+            }
+        });
+        alertDialog.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.dismiss();
+            }
+        });
+        alertDialog.show();
     }
 }

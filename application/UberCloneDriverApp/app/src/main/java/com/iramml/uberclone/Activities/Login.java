@@ -1,6 +1,7 @@
 package com.iramml.uberclone.Activities;
 
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -12,8 +13,10 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.Auth;
@@ -49,10 +52,12 @@ public class Login extends AppCompatActivity implements GoogleApiClient.OnConnec
     private GoogleApiClient googleApiClient;
     public static final int SIGN_IN_CODE_GOOGLE=157;
     Button btnSignIn, btnLogIn;
+    TextView txtForgotPassword;
 
     FirebaseHelper firebaseHelper;
     GoogleSignInAccount account;
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -87,6 +92,15 @@ public class Login extends AppCompatActivity implements GoogleApiClient.OnConnec
                 firebaseHelper.showLoginDialog();
             }
         });
+        txtForgotPassword = (TextView)findViewById(R.id.txtForgotPassword);
+
+        txtForgotPassword.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                firebaseHelper.showDialogForgotPwd();
+                return false;
+            }
+        });
     }
     private void verifyGoogleAccount() {
         OptionalPendingResult<GoogleSignInResult> opr= Auth.GoogleSignInApi.silentSignIn(googleApiClient);
@@ -118,6 +132,7 @@ public class Login extends AppCompatActivity implements GoogleApiClient.OnConnec
             Message.messageError(this, Errors.ERROR_LOGIN_GOOGLE);
         }
     }
+
 
 
     @Override
