@@ -6,6 +6,8 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
     <application
         android:allowBackup="true"
@@ -57,10 +59,10 @@
             android:name=".Activities.DriverTracking"
             android:label="@string/title_activity_driver_tracking" />
         <activity
-            android:name=".TripDetail"
+            android:name=".Activities.TripDetail"
             android:label="@string/title_activity_trip_detail" />
         <activity
-            android:name=".Activities.DrawerHome"
+            android:name=".Activities.DriverHome"
             android:label="@string/title_activity_drawer_home"
             android:theme="@style/AppTheme"></activity>
     </application>

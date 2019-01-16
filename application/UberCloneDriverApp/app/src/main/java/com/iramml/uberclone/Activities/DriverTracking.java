@@ -53,7 +53,6 @@ import com.iramml.uberclone.Model.Notification;
 import com.iramml.uberclone.Model.Sender;
 import com.iramml.uberclone.Model.Token;
 import com.iramml.uberclone.R;
-import com.iramml.uberclone.TripDetail;
 import com.iramml.uberclone.Util.Location;
 
 import org.json.JSONArray;
@@ -73,7 +72,6 @@ public class DriverTracking extends AppCompatActivity implements OnMapReadyCallb
     private GoogleMap mMap;
     Location location=null;
 
-
     private GoogleApiClient mGoogleApiClient;
     double riderLat, riderLng;
     private Circle riderMarker;
@@ -91,6 +89,7 @@ public class DriverTracking extends AppCompatActivity implements OnMapReadyCallb
     Button btnStartTrip;
 
     LatLng pickupLocation;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -127,6 +126,7 @@ public class DriverTracking extends AppCompatActivity implements OnMapReadyCallb
                     btnStartTrip.setText("DROP OFF HERE");
                 }else if(btnStartTrip.getText().equals("DROP OFF HERE")){
                     calculateCashFree(pickupLocation, new LatLng(Common.currentLat, Common.currentLng));
+
                 }
             }
         });
@@ -163,6 +163,8 @@ public class DriverTracking extends AppCompatActivity implements OnMapReadyCallb
                                 String timeText=timeObject.getString("text");
 
                                 Double timeValue=Double.parseDouble(timeText.replaceAll("[^0-9\\\\.]+", ""));
+
+                                sendDropOffNotification(riderID);
 
                                 Intent intent = new Intent(DriverTracking.this, TripDetail.class);
                                 intent.putExtra("start_address", legsObject.getString("start_address"));
@@ -236,6 +238,7 @@ public class DriverTracking extends AppCompatActivity implements OnMapReadyCallb
         });
 
     }
+
     private void sendArrivedNotification(String customerId) {
         Token token = new Token(customerId);
         Notification notification = new Notification( "Arrived",String.format("The driver %s has arrived at your location", Common.currentUser.getName()));
@@ -256,6 +259,28 @@ public class DriverTracking extends AppCompatActivity implements OnMapReadyCallb
         });
 
     }
+
+    private void sendDropOffNotification(String customerId) {
+        Token token = new Token(customerId);
+        Notification notification = new Notification( "DropOff", customerId);
+        Sender sender = new Sender(token.getToken(), notification);
+
+        mFCMService.sendMessage(sender).enqueue(new Callback<FCMResponse>() {
+            @Override
+            public void onResponse(Call<FCMResponse> call, Response<FCMResponse> response) {
+                if (response.body().success != 1) {
+                    Toast.makeText(DriverTracking.this, "Failed", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<FCMResponse> call, Throwable t) {
+
+            }
+        });
+
+    }
+
     private void displayLocation(){
         String user="";
         if (account!=null)user=account.getId();
@@ -272,6 +297,7 @@ public class DriverTracking extends AppCompatActivity implements OnMapReadyCallb
           getDirection();
 
     }
+
     private void getDirection() {
         LatLng currentPosition = new LatLng(Common.currentLat, Common.currentLng);
 

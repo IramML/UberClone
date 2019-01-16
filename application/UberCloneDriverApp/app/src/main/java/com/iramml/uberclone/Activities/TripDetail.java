@@ -1,4 +1,4 @@
-package com.iramml.uberclone;
+package com.iramml.uberclone.Activities;
 
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
@@ -13,6 +13,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.iramml.uberclone.Common.Common;
+import com.iramml.uberclone.R;
 
 import java.util.Calendar;
 

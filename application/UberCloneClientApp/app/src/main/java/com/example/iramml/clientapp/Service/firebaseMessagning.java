@@ -13,6 +13,7 @@ import android.support.v4.app.NotificationCompat;
 import android.widget.Toast;
 
 import com.example.iramml.clientapp.Activities.Home;
+import com.example.iramml.clientapp.Activities.RateActivity;
 import com.example.iramml.clientapp.Common.Common;
 import com.example.iramml.clientapp.R;
 import com.google.android.gms.maps.model.LatLng;
@@ -57,9 +58,17 @@ public class firebaseMessagning extends FirebaseMessagingService {
                  Toast.makeText(this, ""+ex, Toast.LENGTH_SHORT).show();
             }
         }else if(remoteMessage.getNotification().getTitle().equals("DropOff")){
-            //openRateActivity(remoteMessage.getNotification().getBody());
+            openRateActivity(remoteMessage.getNotification().getBody());
         }
     }
+
+    private void openRateActivity(String body) {
+        Intent intent=new Intent(this, RateActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.putExtra("", body);
+        startActivity(intent);
+    }
+
     private void showArrivedNotification(String body) {
         try {
             // Create the NotificationChannel, but only on API 26+ because

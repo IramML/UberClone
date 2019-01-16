@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    app:cardElevation="10dp">
+
+    <ScrollView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_margin="20dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+
+            <com.rengwuxian.materialedittext.MaterialEditText
+                android:id="@+id/etName"
+                android:hint="Name"
+                android:inputType="textCapWords"
+                android:text=""
+                android:textColor="@color/colorPrimary"
+                android:textColorHint="@color/colorPrimary"
+                android:textSize="20sp"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                app:met_singleLineEllipsis="true"
+                app:met_baseColor="@color/colorPrimary"
+                app:met_floatingLabel="highlight"
+                app:met_primaryColor="@color/colorPrimary"
+
+                />
+
+
+
+
+            <com.rengwuxian.materialedittext.MaterialEditText
+                android:id="@+id/etPhone"
+                android:hint="Phone"
+                android:inputType="phone"
+                android:text=""
+                app:met_maxCharacters="11"
+                android:textColor="@color/colorPrimary"
+                android:textColorHint="@color/colorPrimary"
+                android:textSize="20sp"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                app:met_singleLineEllipsis="true"
+                app:met_baseColor="@color/colorPrimary"
+                app:met_floatingLabel="highlight"
+                app:met_primaryColor="@color/colorPrimary"
+
+                />
+            <ImageView
+                android:id="@+id/imageUpload"
+                android:src="@drawable/add_image"
+                android:layout_gravity="center_horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+    </ScrollView>
+
+
+</android.support.v7.widget.CardView>

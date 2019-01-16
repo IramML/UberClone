@@ -17,6 +17,12 @@
             android:id="@+id/nav_settings"
             android:title="SETTINGS" />
         <item
+            android:id="@+id/nav_change_pwd"
+            android:title="CHANGE PASSWORD" />
+        <item
+            android:id="@+id/nav_update_info"
+            android:title="UPDATE INFORMATION" />
+        <item
             android:id="@+id/nav_sign_out"
             android:title="SIGN OUT" />
     </group>

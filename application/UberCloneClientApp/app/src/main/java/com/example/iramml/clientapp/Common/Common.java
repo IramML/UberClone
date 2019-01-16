@@ -13,6 +13,10 @@ public class Common {
     public static final String pickup_request_tbl="PickupRequest";
     public static final String CHANNEL_ID_ARRIVED="ARRIVED";
     public static String token_tbl="Tokens";
+    public static String rate_detail_tbl="RateDetails";
+
+    public static boolean driverFound=false;
+    public static String driverID="";
 
     public static final String fcmURL="https://fcm.googleapis.com/";
     public static final String googleAPIUrl="https://maps.googleapis.com";

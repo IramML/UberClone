@@ -103,8 +103,6 @@ public class Home extends AppCompatActivity
     Button btnRequestPickup;
     BottomSheetRiderFragment bottomSheetRiderFragment;
 
-    boolean driverFound=false;
-    String driverID="";
     int radius=1; // km
     int distance=1;
     private static final int LIMIT=3;
@@ -116,6 +114,7 @@ public class Home extends AppCompatActivity
     PlaceAutocompleteFragment placeLocation, placeDestination;
     AutocompleteFilter typeFilter;
     String mPlaceLocation, mPlaceDestination;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -175,7 +174,7 @@ public class Home extends AppCompatActivity
                     if (account!=null) id=account.getId();
                     else id=FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-                    if (!driverFound)requestPickup(id);
+                    if (!Common.driverFound)requestPickup(id);
                     else sendRequestToDriver();
                 }
             }
@@ -258,7 +257,7 @@ public class Home extends AppCompatActivity
     private void sendRequestToDriver() {
         DatabaseReference tokens=FirebaseDatabase.getInstance().getReference(Common.token_tbl);
 
-        tokens.orderByKey().equalTo(driverID).addListenerForSingleValueEvent(new ValueEventListener() {
+        tokens.orderByKey().equalTo(Common.driverID).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for (DataSnapshot postSnapShot:dataSnapshot.getChildren()){
@@ -312,9 +311,9 @@ public class Home extends AppCompatActivity
         geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
             @Override
             public void onKeyEntered(String key, GeoLocation location) {
-                if (!driverFound){
-                    driverFound=true;
-                    driverID=key;
+                if (!Common.driverFound){
+                    Common.driverFound=true;
+                    Common.driverID=key;
                     btnRequestPickup.setText(getApplicationContext().getResources().getString(R.string.call_driver));
                 }
             }
@@ -331,12 +330,14 @@ public class Home extends AppCompatActivity
 
             @Override
             public void onGeoQueryReady() {
-                if (!driverFound && radius<LIMIT){
+                if (!Common.driverFound && radius<LIMIT){
                     radius++;
                     findDriver();
                 }else{
-                    Toast.makeText(Home.this, "No available any driver near you", Toast.LENGTH_SHORT).show();
-                    btnRequestPickup.setText("REQUEST PICKUP");
+                    if(!Common.driverFound) {
+                        Toast.makeText(Home.this, "No available any driver near you", Toast.LENGTH_SHORT).show();
+                        btnRequestPickup.setText("REQUEST PICKUP");
+                    }
                 }
 
             }
@@ -411,6 +412,7 @@ public class Home extends AppCompatActivity
             account = result.getSignInAccount();
         }
     }
+
     private void setUpLocation() {
         if(ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION)!= PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)!= PackageManager.PERMISSION_GRANTED){
@@ -513,7 +515,6 @@ public class Home extends AppCompatActivity
                 FirebaseDatabase.getInstance().getReference(Common.user_driver_tbl).child(key).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
 
                         Rider driver=dataSnapshot.getValue(Rider.class);
                         String name;

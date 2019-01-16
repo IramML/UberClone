@@ -1,7 +1,7 @@
 package com.iramml.uberclone.Model;
 
 public class User{
-    private String email, name, password, phone;
+    private String email, name, password, phone, avatarUrl, rates;
 
     public User(){
 
@@ -11,6 +11,22 @@ public class User{
         this.name = name;
         this.password = password;
         this.phone = phone;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public String getRates() {
+        return rates;
+    }
+
+    public void setRates(String rates) {
+        this.rates = rates;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
     }
 
     public String getEmail() {
