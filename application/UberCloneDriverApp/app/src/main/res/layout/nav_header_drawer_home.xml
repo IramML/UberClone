@@ -25,7 +25,7 @@
       android:layout_width="match_parent"
       android:layout_height="wrap_content">
     <TextView
-        android:id="@+id/txtDriverName"
+        android:id="@+id/tvDriverName"
         android:text="Iram"
         android:layout_weight="4"
         android:layout_width="0dp"
@@ -41,7 +41,7 @@
             android:layout_width="12dp"
             android:layout_height="12dp" />
           <TextView
-              android:id="@+id/txtStarts"
+              android:id="@+id/tvStars"
               android:text="4.5"
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"

@@ -307,8 +307,8 @@ public class DriverHome extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         View navigationHeaderView=navigationView.getHeaderView(0);
-        TextView tvName=(TextView)navigationHeaderView.findViewById(R.id.txtDriverName);
-        TextView tvStars=(TextView)findViewById(R.id.txtStarts);
+        TextView tvName=(TextView)navigationHeaderView.findViewById(R.id.tvDriverName);
+        TextView tvStars=(TextView)navigationHeaderView.findViewById(R.id.tvStars);
         CircleImageView imageAvatar=(CircleImageView) navigationHeaderView.findViewById(R.id.imageAvatar);
 
         tvName.setText(Common.currentUser.getName());
@@ -662,6 +662,7 @@ public class DriverHome extends AppCompatActivity
         super.onStop();
         location.stopUpdateLocation();
     }
+
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -774,7 +775,6 @@ public class DriverHome extends AppCompatActivity
         });
         alertDialog.show();
     }
-
 
     private void chooseImage() {
         Dexter.withActivity(this)

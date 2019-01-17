@@ -1,11 +1,18 @@
 package com.example.iramml.clientapp.Activities;
 
+import android.Manifest;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
-import android.util.Log;
+import android.support.v7.app.AlertDialog;
+import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -17,6 +24,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.iramml.clientapp.Common.Common;
@@ -26,11 +34,7 @@ import com.example.iramml.clientapp.Interfaces.IFCMService;
 import com.example.iramml.clientapp.Interfaces.locationListener;
 import com.example.iramml.clientapp.Messages.Errors;
 import com.example.iramml.clientapp.Messages.Message;
-import com.example.iramml.clientapp.Messages.Messages;
-import com.example.iramml.clientapp.Model.FCMResponse;
-import com.example.iramml.clientapp.Model.Notification;
-import com.example.iramml.clientapp.Model.Rider;
-import com.example.iramml.clientapp.Model.Sender;
+import com.example.iramml.clientapp.Model.User;
 import com.example.iramml.clientapp.Model.Token;
 import com.example.iramml.clientapp.R;
 import com.example.iramml.clientapp.Util.Location;
@@ -64,6 +68,9 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -71,16 +78,32 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.gson.Gson;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.google.maps.android.SphericalUtil;
+import com.karumi.dexter.Dexter;
+import com.karumi.dexter.MultiplePermissionsReport;
+import com.karumi.dexter.PermissionToken;
+import com.karumi.dexter.listener.PermissionRequest;
+import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
+import com.rengwuxian.materialedittext.MaterialEditText;
+import com.squareup.picasso.Picasso;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import de.hdodenhof.circleimageview.CircleImageView;
+import dmax.dialog.SpotsDialog;
 
 public class Home extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
+        GoogleMap.OnInfoWindowClickListener {
 
+    Toolbar toolbar;
     Location location=null;
     private GoogleMap mMap;
     Marker riderMarket, destinationMarker;
@@ -115,25 +138,24 @@ public class Home extends AppCompatActivity
     AutocompleteFilter typeFilter;
     String mPlaceLocation, mPlaceDestination;
 
+    CircleImageView imgUser;
+    TextView txRiderName, tvStars;
+
+    FirebaseStorage storage;
+    StorageReference storageReference;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        loadUser();
         verifyGoogleAccount();
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ifcmService=Common.getFCMService();
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.addDrawerListener(toggle);
-        toggle.syncState();
-
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
-
-
 
         location=new Location(this, new locationListener() {
             @Override
@@ -175,12 +197,15 @@ public class Home extends AppCompatActivity
                     else id=FirebaseAuth.getInstance().getCurrentUser().getUid();
 
                     if (!Common.driverFound)requestPickup(id);
-                    else sendRequestToDriver();
+                    else
+                        Common.sendRequestToDriver(Common.driverID, ifcmService, getApplicationContext(), new LatLng(currentLat, currentLng));
                 }
             }
         });
+
         placeDestination=(PlaceAutocompleteFragment)getFragmentManager().findFragmentById(R.id.placeDestination);
         placeLocation=(PlaceAutocompleteFragment)getFragmentManager().findFragmentById(R.id.placeLocation);
+
         typeFilter=new AutocompleteFilter.Builder()
                 .setTypeFilter(AutocompleteFilter.TYPE_FILTER_ADDRESS)
                 .setTypeFilter(3)
@@ -221,8 +246,51 @@ public class Home extends AppCompatActivity
 
             }
         });
+
         setUpLocation();
         updateFirebaseToken();
+    }
+
+    public void initDrawer(){
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.addDrawerListener(toggle);
+        toggle.syncState();
+
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+
+        View navigationHeaderView=navigationView.getHeaderView(0);
+        TextView tvName=(TextView)navigationHeaderView.findViewById(R.id.tvRiderName);
+        TextView tvStars=(TextView)findViewById(R.id.tvStars);
+        CircleImageView imageAvatar=(CircleImageView) navigationHeaderView.findViewById(R.id.imgAvatar);
+
+        tvName.setText(Common.currentUser.getName());
+        if(Common.currentUser.getRates()!=null &&
+                !TextUtils.isEmpty(Common.currentUser.getRates()))
+            tvStars.setText(Common.currentUser.getRates());
+
+        if(Common.currentUser.getAvatarUrl()!=null &&
+                !TextUtils.isEmpty(Common.currentUser.getAvatarUrl()))
+            Picasso.get().load(Common.currentUser.getAvatarUrl()).into(imageAvatar);
+    }
+
+    private void loadUser(){
+        FirebaseDatabase.getInstance().getReference(Common.user_rider_tbl)
+                .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        Common.currentUser=dataSnapshot.getValue(User.class);
+                        initDrawer();
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
     }
 
     private void verifyGoogleAccount() {
@@ -252,42 +320,6 @@ public class Home extends AppCompatActivity
         Token token=new Token(FirebaseInstanceId.getInstance().getToken());
         if(FirebaseAuth.getInstance().getUid()!=null) tokens.child(FirebaseAuth.getInstance().getUid()).setValue(token);
         else tokens.child(account.getId()).setValue(token);
-    }
-
-    private void sendRequestToDriver() {
-        DatabaseReference tokens=FirebaseDatabase.getInstance().getReference(Common.token_tbl);
-
-        tokens.orderByKey().equalTo(Common.driverID).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for (DataSnapshot postSnapShot:dataSnapshot.getChildren()){
-                    Token token=postSnapShot.getValue(Token.class);
-                    String json_lat_lng=new Gson().toJson(new LatLng(currentLat, currentLng));
-
-                    String riderToken=FirebaseInstanceId.getInstance().getToken();
-                    Notification data=new Notification(riderToken, json_lat_lng);
-                    Sender content=new Sender(token.getToken(), data);
-
-                    ifcmService.sendMessage(content).enqueue(new Callback<FCMResponse>() {
-                        @Override
-                        public void onResponse(Call<FCMResponse> call, Response<FCMResponse> response) {
-                            if (response.body().success==1) Message.message(Home.this, Messages.REQUEST_SUCCESS);
-                            else Message.messageError(Home.this, Errors.SENT_FAILED);
-                        }
-
-                        @Override
-                        public void onFailure(Call<FCMResponse> call, Throwable t) {
-                            Log.d("ERROR", t.getMessage());
-                        }
-                    });
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
     }
 
     private void requestPickup(String uid) {
@@ -387,18 +419,13 @@ public class Home extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
+        switch (id){
+            case R.id.nav_updateInformation:
+                showDialogUpdateInfo();
+                break;
+            case R.id.nav_signOut:
+                signOut();
+                break;
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -406,6 +433,141 @@ public class Home extends AppCompatActivity
         return true;
     }
 
+    private void showDialogUpdateInfo() {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(Home.this);
+        alertDialog.setTitle("UPDATE INFORMATION");
+        LayoutInflater inflater = this.getLayoutInflater();
+        View layout_pwd = inflater.inflate(R.layout.layout_update_information, null);
+        final MaterialEditText etName = (MaterialEditText) layout_pwd.findViewById(R.id.etName);
+        final MaterialEditText etPhone = (MaterialEditText) layout_pwd.findViewById(R.id.etPhone);
+        final ImageView image_upload = (ImageView) layout_pwd.findViewById(R.id.imageUpload);
+        image_upload.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                chooseImage();
+            }
+        });
+        alertDialog.setView(layout_pwd);
+        alertDialog.setPositiveButton("UPDATE", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.dismiss();
+                final android.app.AlertDialog waitingDialog = new SpotsDialog(Home.this);
+                waitingDialog.show();
+                String name = etName.getText().toString();
+                String phone = etPhone.getText().toString();
+
+                Map<String, Object> updateInfo = new HashMap<>();
+                if(!TextUtils.isEmpty(name))
+                    updateInfo.put("name", name);
+                if(!TextUtils.isEmpty(phone))
+                    updateInfo.put("phone",phone);
+                DatabaseReference driverInformation = FirebaseDatabase.getInstance().getReference(Common.user_rider_tbl);
+                driverInformation.child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                        .updateChildren(updateInfo)
+                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                waitingDialog.dismiss();
+                                if(task.isSuccessful())
+                                    Toast.makeText(Home.this,"Information Updated!",Toast.LENGTH_SHORT).show();
+                                else
+                                    Toast.makeText(Home.this,"Information Update Failed!",Toast.LENGTH_SHORT).show();
+
+                            }
+                        });
+            }
+        });
+        alertDialog.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.dismiss();
+            }
+        });
+        alertDialog.show();
+    }
+
+    private void chooseImage() {
+        Dexter.withActivity(this)
+                .withPermissions(Manifest.permission.READ_EXTERNAL_STORAGE,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .withListener(new MultiplePermissionsListener() {
+                    @Override
+                    public void onPermissionsChecked(MultiplePermissionsReport report) {
+                        if(report.areAllPermissionsGranted()){
+                            Intent intent=new Intent(Intent.ACTION_PICK);
+                            intent.setType("image/*");
+                            startActivityForResult(intent, Common.PICK_IMAGE_REQUEST);
+                        }else{
+                            Toast.makeText(getApplicationContext(), "Permission denied", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onPermissionRationaleShouldBeShown(List<PermissionRequest> permissions, PermissionToken token) {
+                        token.continuePermissionRequest();
+                    }
+                }).check();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode==Common.PICK_IMAGE_REQUEST && resultCode==RESULT_OK && data!=null && data.getData()!=null){
+            Uri saveUri=data.getData();
+            if(saveUri!=null){
+                final ProgressDialog progressDialog=new ProgressDialog(this);
+                progressDialog.setMessage("Uploading...");
+                progressDialog.show();
+
+                String imageName=UUID.randomUUID().toString();
+                final StorageReference imageFolder=storageReference.child("images/"+imageName);
+                //FIXME 0.0% progress
+                imageFolder.putFile(saveUri)
+                        .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                            @Override
+                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                progressDialog.dismiss();
+                                Toast.makeText(Home.this, "Uploaded!", Toast.LENGTH_SHORT).show();
+                                imageFolder.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                    @Override
+                                    public void onSuccess(Uri uri) {
+
+                                        Map<String, Object> avatarUpdate=new HashMap<>();
+                                        avatarUpdate.put("avatarUrl", uri.toString());
+
+                                        DatabaseReference driverInformations=FirebaseDatabase.getInstance().getReference(Common.user_rider_tbl);
+                                        driverInformations.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).updateChildren(avatarUpdate)
+                                                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<Void> task) {
+                                                        if(task.isSuccessful())
+                                                            Toast.makeText(Home.this, "Uploaded!", Toast.LENGTH_SHORT).show();
+                                                        else
+                                                            Toast.makeText(Home.this, "Uploaded error!", Toast.LENGTH_SHORT).show();
+
+                                                    }
+                                                });
+                                    }
+                                });
+                            }
+                        }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                        double progress=(100.0*taskSnapshot.getBytesTransferred())/taskSnapshot.getTotalByteCount();
+                        progressDialog.setMessage("Uploaded "+progress+"%");
+                    }
+                });
+            }
+        }
+    }
+
+    private void signOut() {
+        FirebaseAuth.getInstance().signOut();
+        Intent intent=new Intent(Home.this, Login.class);
+        startActivity(intent);
+        finish();
+    }
 
     private void handleSignInResult(GoogleSignInResult result) {
         if (result.isSuccess()) {
@@ -516,7 +678,7 @@ public class Home extends AppCompatActivity
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                        Rider driver=dataSnapshot.getValue(Rider.class);
+                        User driver=dataSnapshot.getValue(User.class);
                         String name;
                         String phone;
 
@@ -528,7 +690,7 @@ public class Home extends AppCompatActivity
 
 
                         mMap.addMarker(new MarkerOptions().position(new LatLng(location.latitude, location.longitude)).flat(true)
-                                .title(name).snippet(phone).icon(BitmapDescriptorFactory.fromResource(R.drawable.car)));
+                                .title(name).snippet("Driver ID: "+dataSnapshot.getKey()).icon(BitmapDescriptorFactory.fromResource(R.drawable.car)));
 
                     }
 
@@ -587,6 +749,7 @@ public class Home extends AppCompatActivity
                 mBottomSheet.show(getSupportFragmentManager(), mBottomSheet.getTag());
             }
         });
+        mMap.setOnInfoWindowClickListener(this);
     }
 
     @Override
@@ -629,5 +792,16 @@ public class Home extends AppCompatActivity
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
+    }
+
+    @Override
+    public void onInfoWindowClick(Marker marker) {
+        if(!marker.getTitle().equals("You")){
+            Intent intent=new Intent(Home.this, CallDriver.class);
+            intent.putExtra("driverID", marker.getSnippet().replace("Driver ID: ", ""));
+            intent.putExtra("lat", currentLat);
+            intent.putExtra("lng", currentLng);
+            startActivity(intent);
+        }
     }
 }

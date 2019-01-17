@@ -13,7 +13,7 @@ import android.view.View;
 
 import com.example.iramml.clientapp.Activities.Home;
 import com.example.iramml.clientapp.Common.Common;
-import com.example.iramml.clientapp.Model.Rider;
+import com.example.iramml.clientapp.Model.User;
 import com.example.iramml.clientapp.R;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -45,6 +45,7 @@ public class FirebaseHelper {
         users=firebaseDatabase.getReference(Common.user_rider_tbl);
         if(firebaseAuth.getUid()!=null)loginSuccess();
     }
+
     public void showLoginDialog(){
         AlertDialog.Builder alertDialog=new AlertDialog.Builder(activity);
         alertDialog.setTitle(activity.getResources().getString(R.string.login));
@@ -100,6 +101,7 @@ public class FirebaseHelper {
         });
         alertDialog.show();
     }
+
     public void showRegistrerDialog(){
         AlertDialog.Builder alertDialog=new AlertDialog.Builder(activity);
         alertDialog.setTitle(activity.getResources().getString(R.string.signin));
@@ -142,7 +144,7 @@ public class FirebaseHelper {
                         .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
                             @Override
                             public void onSuccess(AuthResult authResult) {
-                                Rider user=new Rider();
+                                User user=new User();
                                 user.setEmail(etEmail.getText().toString());
                                 user.setName(etName.getText().toString());
                                 user.setPassword(etPassword.getText().toString());
@@ -179,7 +181,7 @@ public class FirebaseHelper {
         });
         alertDialog.show();
     }
-    public void showRegisterPhone(final Rider user, final GoogleSignInAccount account){
+    public void showRegisterPhone(final User user, final GoogleSignInAccount account){
         AlertDialog.Builder alertDialog=new AlertDialog.Builder(activity);
         alertDialog.setTitle(activity.getResources().getString(R.string.signin));
         alertDialog.setMessage(activity.getResources().getString(R.string.fill_fields));
@@ -230,11 +232,11 @@ public class FirebaseHelper {
         activity.finish();
     }
     public void registerByGoogleAccount(final GoogleSignInAccount account){
-        final Rider user=new Rider();
+        final User user=new User();
         users.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                Rider post = dataSnapshot.child(account.getId()).getValue(Rider.class);
+                User post = dataSnapshot.child(account.getId()).getValue(User.class);
 
                 if(post==null) showRegisterPhone(user, account);
                 else loginSuccess();

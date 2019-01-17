@@ -1,47 +1,26 @@
 package com.example.iramml.clientapp.Activities;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.annotation.NonNull;
-import android.support.constraint.ConstraintLayout;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.TextUtils;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 
-import com.example.iramml.clientapp.Common.Common;
 import com.example.iramml.clientapp.Helper.FirebaseHelper;
 import com.example.iramml.clientapp.Messages.Errors;
 import com.example.iramml.clientapp.Messages.Message;
-import com.example.iramml.clientapp.Model.Rider;
 import com.example.iramml.clientapp.R;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInApi;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.OptionalPendingResult;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-import com.rengwuxian.materialedittext.MaterialEditText;
 
-import dmax.dialog.SpotsDialog;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
@@ -88,6 +67,7 @@ public class Login extends AppCompatActivity implements GoogleApiClient.OnConnec
             }
         });
     }
+
     private void verifyGoogleAccount() {
         OptionalPendingResult<GoogleSignInResult> opr= Auth.GoogleSignInApi.silentSignIn(googleApiClient);
         if (opr.isDone()){
@@ -110,6 +90,7 @@ public class Login extends AppCompatActivity implements GoogleApiClient.OnConnec
             handleSignInResult(result);
         }
     }
+
     private void handleSignInResult(GoogleSignInResult result) {
         if (result.isSuccess()){
             account = result.getSignInAccount();

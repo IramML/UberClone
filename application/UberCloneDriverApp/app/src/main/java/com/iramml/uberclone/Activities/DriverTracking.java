@@ -1,6 +1,5 @@
 package com.iramml.uberclone.Activities;
 
-
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Color;
