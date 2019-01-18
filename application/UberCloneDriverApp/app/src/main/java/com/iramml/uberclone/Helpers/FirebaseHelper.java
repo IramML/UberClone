@@ -149,6 +149,7 @@ public class FirebaseHelper {
                                 user.setName(etName.getText().toString());
                                 user.setPassword(etPassword.getText().toString());
                                 user.setPhone(etPhone.getText().toString());
+                                user.setCarType("UberX");
 
                                 users.child(FirebaseAuth.getInstance().getCurrentUser().getUid())
                                         .setValue(user)

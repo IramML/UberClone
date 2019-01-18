@@ -39,9 +39,6 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
-        <activity
-            android:name=".Activities.Main"
-            android:label="@string/title_activity_main" />
         <activity android:name=".Activities.CustommerCall" />
 
         <service android:name=".Service.FirebaseIdService">

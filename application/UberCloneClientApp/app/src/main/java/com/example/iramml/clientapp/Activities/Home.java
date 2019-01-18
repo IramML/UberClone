@@ -144,15 +144,18 @@ public class Home extends AppCompatActivity
     FirebaseStorage storage;
     StorageReference storageReference;
 
+    ImageView carUberX, carUberBlack;
+    boolean isUberX=false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
-
+        verifyGoogleAccount();
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
         loadUser();
-        verifyGoogleAccount();
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ifcmService=Common.getFCMService();
@@ -185,18 +188,44 @@ public class Home extends AppCompatActivity
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        imgExpandable=findViewById(R.id.imgExpandable);
+        carUberX=findViewById(R.id.selectedUberX);
+        carUberBlack=findViewById(R.id.selectedUberBlack);
+
+        carUberX.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                boolean isToggle=!isUberX;
+                isUberX=true;
+                if(isToggle) {
+                    carUberX.setImageResource(R.drawable.car_cui_select);
+                    carUberBlack.setImageResource(R.drawable.car_vip);
+                }
+                mMap.clear();
+                loadAllAvailableDriver(new LatLng(currentLat, currentLng));
+            }
+        });
+
+        carUberBlack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                boolean isToggle=isUberX;
+                isUberX=false;
+                if(isToggle) {
+                    carUberX.setImageResource(R.drawable.car_cui);
+                    carUberBlack.setImageResource(R.drawable.car_vip_select);
+                }
+                mMap.clear();
+                loadAllAvailableDriver(new LatLng(currentLat, currentLng));
+            }
+        });
 
         btnRequestPickup=findViewById(R.id.btnPickupRequest);
         btnRequestPickup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (currentLat!=null && currentLng!=null) {
-                    String id;
-                    if (account!=null) id=account.getId();
-                    else id=FirebaseAuth.getInstance().getCurrentUser().getUid();
-
-                    if (!Common.driverFound)requestPickup(id);
+                    if (!Common.driverFound)
+                        requestPickup(Common.userID);
                     else
                         Common.sendRequestToDriver(Common.driverID, ifcmService, getApplicationContext(), new LatLng(currentLat, currentLng));
                 }
@@ -278,7 +307,7 @@ public class Home extends AppCompatActivity
 
     private void loadUser(){
         FirebaseDatabase.getInstance().getReference(Common.user_rider_tbl)
-                .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                .child(Common.userID)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -463,7 +492,7 @@ public class Home extends AppCompatActivity
                 if(!TextUtils.isEmpty(phone))
                     updateInfo.put("phone",phone);
                 DatabaseReference driverInformation = FirebaseDatabase.getInstance().getReference(Common.user_rider_tbl);
-                driverInformation.child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                driverInformation.child(Common.userID)
                         .updateChildren(updateInfo)
                         .addOnCompleteListener(new OnCompleteListener<Void>() {
                             @Override
@@ -536,8 +565,9 @@ public class Home extends AppCompatActivity
                                         Map<String, Object> avatarUpdate=new HashMap<>();
                                         avatarUpdate.put("avatarUrl", uri.toString());
 
+
                                         DatabaseReference driverInformations=FirebaseDatabase.getInstance().getReference(Common.user_rider_tbl);
-                                        driverInformations.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).updateChildren(avatarUpdate)
+                                        driverInformations.child(Common.userID).updateChildren(avatarUpdate)
                                                 .addOnCompleteListener(new OnCompleteListener<Void>() {
                                                     @Override
                                                     public void onComplete(@NonNull Task<Void> task) {
@@ -563,16 +593,33 @@ public class Home extends AppCompatActivity
     }
 
     private void signOut() {
-        FirebaseAuth.getInstance().signOut();
-        Intent intent=new Intent(Home.this, Login.class);
-        startActivity(intent);
-        finish();
+        if(account.getId()==null) {
+            FirebaseAuth.getInstance().signOut();
+            Intent intent=new Intent(Home.this, Login.class);
+            startActivity(intent);
+            finish();
+        }else{
+            Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(new ResultCallback<Status>() {
+                @Override
+                public void onResult(@NonNull Status status) {
+                    if (status.isSuccess()) {
+                        Intent intent = new Intent(Home.this, Login.class);
+                        startActivity(intent);
+                        finish();
+                    } else {
+                        Toast.makeText(Home.this, "Could not log out", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+        }
     }
 
     private void handleSignInResult(GoogleSignInResult result) {
         if (result.isSuccess()) {
             account = result.getSignInAccount();
-        }
+            Common.userID=account.getId();
+        }else
+            Common.userID=FirebaseAuth.getInstance().getCurrentUser().getUid();
     }
 
     private void setUpLocation() {
@@ -628,10 +675,6 @@ public class Home extends AppCompatActivity
 
             placeDestination.setBoundsBias(bounds);
             placeDestination.setFilter(typeFilter);
-
-            String user="";
-            if (account!=null)user=account.getId();
-            else user= FirebaseAuth.getInstance().getCurrentUser().getUid();
             //presence system
             driversAvailable = FirebaseDatabase.getInstance().getReference(Common.driver_tbl);
             driversAvailable.addValueEventListener(new ValueEventListener() {
@@ -646,8 +689,6 @@ public class Home extends AppCompatActivity
 
                 }
             });
-
-
 
             loadAllAvailableDriver(new LatLng(currentLat, currentLng));
 
@@ -666,7 +707,13 @@ public class Home extends AppCompatActivity
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(location, 15.0f));
 
 
-        DatabaseReference driverLocation=FirebaseDatabase.getInstance().getReference(Common.driver_tbl);
+        DatabaseReference driverLocation;
+
+        if(isUberX)
+            driverLocation=FirebaseDatabase.getInstance().getReference(Common.driver_tbl).child("UberX");
+        else
+            driverLocation=FirebaseDatabase.getInstance().getReference(Common.driver_tbl).child("Uber Black");
+
         GeoFire geoFire=new GeoFire(driverLocation);
 
         GeoQuery geoQuery=geoFire.queryAtLocation(new GeoLocation(location.latitude, location.longitude), distance);
@@ -765,7 +812,6 @@ public class Home extends AppCompatActivity
                         displayLocation();
                     }
                 }
-
                 break;
             case PLAY_SERVICES_REQUEST_CODE:
                 break;

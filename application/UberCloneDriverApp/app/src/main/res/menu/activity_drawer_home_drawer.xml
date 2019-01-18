@@ -8,6 +8,9 @@
             android:id="@+id/nav_trip_history"
             android:title="TRIP HISTORY" />
         <item
+            android:id="@+id/nav_car_type"
+            android:title="UPDATE VEHICLE TYPE" />
+        <item
             android:id="@+id/nav_way_bill"
             android:title="WAYBILL" />
         <item

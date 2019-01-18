@@ -40,6 +40,7 @@ public class Common {
     public static final int PICK_IMAGE_REQUEST = 9999;
 
     public static User currentUser=new User();
+    public static String userID;
 
     public static boolean driverFound=false;
     public static String driverID="";

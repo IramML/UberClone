@@ -102,13 +102,17 @@ public class Login extends AppCompatActivity implements GoogleApiClient.OnConnec
             }
         });
     }
+
     private void verifyGoogleAccount() {
         OptionalPendingResult<GoogleSignInResult> opr= Auth.GoogleSignInApi.silentSignIn(googleApiClient);
         if (opr.isDone()){
             GoogleSignInResult result= opr.get();
-            if (result.isSuccess()) firebaseHelper.loginSuccess();
+            if (result.isSuccess())
+                firebaseHelper.loginSuccess();
+
         }
     }
+
     @Override
     protected void onStart() {
         super.onStart();
@@ -124,6 +128,7 @@ public class Login extends AppCompatActivity implements GoogleApiClient.OnConnec
             handleSignInResult(result);
         }
     }
+
     private void handleSignInResult(GoogleSignInResult result) {
         if (result.isSuccess()){
             account = result.getSignInAccount();
@@ -132,8 +137,6 @@ public class Login extends AppCompatActivity implements GoogleApiClient.OnConnec
             Message.messageError(this, Errors.ERROR_LOGIN_GOOGLE);
         }
     }
-
-
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {

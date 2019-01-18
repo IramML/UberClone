@@ -31,27 +31,35 @@
             android:layout_alignParentBottom="true"
             android:elevation="10dp">
             <android.support.v7.widget.CardView
-                android:id="@+id/imgExpandableLayout"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                app:cardCornerRadius="4dp"
-                android:elevation="10dp">
-                <ImageView
-                    android:id="@+id/imgExpandable"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@drawable/ic_pin_drop" />
-            </android.support.v7.widget.CardView>
-            <android.support.v7.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/imgExpandableLayout"
                 android:elevation="10dp">
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
+                    <LinearLayout
+                        android:layout_marginTop="4dp"
+                        android:layout_marginBottom="4dp"
+                        android:layout_centerHorizontal="true"
+                        android:orientation="horizontal"
+                        android:id="@+id/selectCardGroup"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
+                        <ImageView
+                            android:id="@+id/selectedUberX"
+                            android:src="@drawable/car_cui_select"
+                            android:layout_marginRight="8dp"
+                            android:layout_width="60dp"
+                            android:layout_height="60dp" />
+                        <ImageView
+                            android:id="@+id/selectedUberBlack"
+                            android:src="@drawable/car_vip"
+                            android:layout_marginLeft="8dp"
+                            android:layout_width="60dp"
+                            android:layout_height="60dp" />
+                    </LinearLayout>
                     <Button
+                        android:layout_below="@id/selectCardGroup"
                         android:id="@+id/btnPickupRequest"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"

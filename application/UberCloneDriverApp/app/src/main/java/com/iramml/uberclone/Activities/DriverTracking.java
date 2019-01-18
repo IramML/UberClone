@@ -281,10 +281,6 @@ public class DriverTracking extends AppCompatActivity implements OnMapReadyCallb
     }
 
     private void displayLocation(){
-        String user="";
-        if (account!=null)user=account.getId();
-        else user=FirebaseAuth.getInstance().getCurrentUser().getUid();
-
         //add driver location
         if(driverMarker!=null)driverMarker.remove();
         driverMarker=mMap.addMarker(new MarkerOptions().position(new LatLng(Common.currentLat, Common.currentLng))
