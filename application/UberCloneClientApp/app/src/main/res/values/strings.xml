@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">RiderApp</string>
     <string name="google_direction_api">AIzaSyDcUwk5nBq2FTZsbWDVt1gQKW1MZYw5Ioo</string>
+    <string name="facebook_app_id">2210819865853004</string>
+    <string name="fb_login_protocol_scheme">fb2210819865853004</string>
     <string name="title_activity_main">Map</string>
     <string name="title_activity_home">Home</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>

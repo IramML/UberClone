@@ -46,7 +46,9 @@ dependencies {
     implementation 'com.github.d-max:spots-dialog:0.7@aar'
     implementation 'com.google.maps.android:android-maps-utils:0.5+'
     implementation 'me.zhanghai.android.materialratingbar:library:1.2.0'
-    implementation 'de.hdodenhof:circleimageview:2.2.0'
+    implementation 'de.hdodenhof:circleimageview:3.0.0'
     implementation 'com.karumi:dexter:5.0.0'
+    implementation 'com.facebook.android:facebook-login:4.40.0'
+    implementation 'com.github.medyo:fancybuttons:1.9.0'
 }
 apply plugin: 'com.google.gms.google-services'

@@ -11,6 +11,10 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 
+import com.facebook.AccessToken;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
+import com.facebook.login.LoginManager;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -28,6 +32,8 @@ import com.iramml.uberclone.Common.Common;
 import com.iramml.uberclone.Model.User;
 import com.iramml.uberclone.R;
 import com.rengwuxian.materialedittext.MaterialEditText;
+
+import org.json.JSONObject;
 
 import dmax.dialog.SpotsDialog;
 
@@ -200,6 +206,7 @@ public class FirebaseHelper {
                 user.setName(account.getDisplayName());
                 user.setPassword(null);
                 user.setPhone(etPhone.getText().toString());
+                user.setCarType("UberX");
                 users.child(account.getId())
                         .setValue(user)
                         .addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -220,6 +227,51 @@ public class FirebaseHelper {
         alertDialog.setNegativeButton(activity.getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.dismiss();
+            }
+        });
+        alertDialog.show();
+    }
+    public void showRegisterPhone(final User user, final String id, final String name, final String email){
+        AlertDialog.Builder alertDialog=new AlertDialog.Builder(activity);
+        alertDialog.setTitle(activity.getResources().getString(R.string.signin));
+        alertDialog.setMessage(activity.getResources().getString(R.string.fill_fields));
+
+        LayoutInflater inflater=LayoutInflater.from(activity);
+        View register_phone_layout=inflater.inflate(R.layout.layout_register_phone, null);
+        final MaterialEditText etPhone=register_phone_layout.findViewById(R.id.etPhone);
+
+        alertDialog.setView(register_phone_layout);
+        alertDialog.setPositiveButton(activity.getResources().getString(R.string.login), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.dismiss();
+                user.setEmail(email);
+                user.setName(name);
+                user.setPassword(null);
+                user.setPhone(etPhone.getText().toString());
+                user.setCarType("UberX");
+                users.child(id)
+                        .setValue(user)
+                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                Snackbar.make(root, activity.getResources().getString(R.string.registered), Snackbar.LENGTH_SHORT).show();
+                                loginSuccess();
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Snackbar.make(root, activity.getResources().getString(R.string.failed)+e.getMessage(), Snackbar.LENGTH_SHORT).show();
+
+                    }
+                });
+            }
+        });
+        alertDialog.setNegativeButton(activity.getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                LoginManager.getInstance().logOut();
                 dialogInterface.dismiss();
             }
         });
@@ -249,44 +301,34 @@ public class FirebaseHelper {
             }
         });
     }
-    public void showDialogForgotPwd() {
-        AlertDialog.Builder alertDialog = new AlertDialog.Builder(activity);
-        alertDialog.setTitle("FORGOT PASSWORD");
-        alertDialog.setMessage("Please enter your email address");
-        LayoutInflater inflater = LayoutInflater.from(activity);
-        View forgot_pwd_layout = inflater.inflate(R.layout.layout_forgot_pwd,null);
-        final MaterialEditText edtEmail = (MaterialEditText)forgot_pwd_layout.findViewById(R.id.edtEmail);
-        alertDialog.setView(forgot_pwd_layout);
-        //set button
-        alertDialog.setPositiveButton("RESET", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(final DialogInterface dialogInterface, int i) {
-                final SpotsDialog waitingDialog = new SpotsDialog(activity);
-                waitingDialog.show();
-                firebaseAuth.sendPasswordResetEmail(edtEmail.getText().toString().trim())
-                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-                                dialogInterface.dismiss();
-                                waitingDialog.dismiss();
-                                Snackbar.make(root,"Reset password link has been sent",Snackbar.LENGTH_LONG).show();
-                            }
-                        }).addOnFailureListener(new OnFailureListener() {
+    public void registerByFacebookAccount(){
+        AccessToken accessToken = AccessToken.getCurrentAccessToken();
+        GraphRequest request = GraphRequest.newMeRequest(
+                accessToken,
+                new GraphRequest.GraphJSONObjectCallback() {
                     @Override
-                    public void onFailure(@NonNull Exception e) {
-                        dialogInterface.dismiss();
-                        waitingDialog.dismiss();
-                        Snackbar.make(root,""+e.getMessage(),Snackbar.LENGTH_LONG).show();
+                    public void onCompleted(JSONObject object, GraphResponse response) {
+                        final String name=object.optString("name");
+                        final String id=object.optString("id");
+                        final String email=object.optString("email");
+                        final User user=new User();
+                        users.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                User post = dataSnapshot.child(id).getValue(User.class);
+
+                                if(post==null) showRegisterPhone(user, id, name, email);
+                                else loginSuccess();
+
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                            }
+                        });
                     }
                 });
-            }
-        });
-        alertDialog.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.dismiss();
-            }
-        });
-        alertDialog.show();
+        request.executeAsync();
     }
 }

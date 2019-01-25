@@ -15,6 +15,10 @@ import com.example.iramml.clientapp.Activities.Home;
 import com.example.iramml.clientapp.Common.Common;
 import com.example.iramml.clientapp.Model.User;
 import com.example.iramml.clientapp.R;
+import com.facebook.AccessToken;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
+import com.facebook.login.LoginManager;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -26,6 +30,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.rengwuxian.materialedittext.MaterialEditText;
+
+import org.json.JSONObject;
 
 import dmax.dialog.SpotsDialog;
 
@@ -224,6 +230,50 @@ public class FirebaseHelper {
         });
         alertDialog.show();
     }
+    public void showRegisterPhone(final User user, final String id, final String name, final String email){
+        AlertDialog.Builder alertDialog=new AlertDialog.Builder(activity);
+        alertDialog.setTitle(activity.getResources().getString(R.string.signin));
+        alertDialog.setMessage(activity.getResources().getString(R.string.fill_fields));
+
+        LayoutInflater inflater=LayoutInflater.from(activity);
+        View register_phone_layout=inflater.inflate(R.layout.layout_register_phone, null);
+        final MaterialEditText etPhone=register_phone_layout.findViewById(R.id.etPhone);
+
+        alertDialog.setView(register_phone_layout);
+        alertDialog.setPositiveButton(activity.getResources().getString(R.string.login), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.dismiss();
+                user.setEmail(email);
+                user.setName(name);
+                user.setPassword(null);
+                user.setPhone(etPhone.getText().toString());
+                users.child(id)
+                        .setValue(user)
+                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                Snackbar.make(root, activity.getResources().getString(R.string.registered), Snackbar.LENGTH_SHORT).show();
+                                loginSuccess();
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Snackbar.make(root, activity.getResources().getString(R.string.failed)+e.getMessage(), Snackbar.LENGTH_SHORT).show();
+
+                    }
+                });
+            }
+        });
+        alertDialog.setNegativeButton(activity.getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                LoginManager.getInstance().logOut();
+                dialogInterface.dismiss();
+            }
+        });
+        alertDialog.show();
+    }
     public void loginSuccess(){
         goToMainActivity();
     }
@@ -247,5 +297,35 @@ public class FirebaseHelper {
 
             }
         });
+    }
+    public void registerByFacebookAccount(){
+        AccessToken accessToken = AccessToken.getCurrentAccessToken();
+        GraphRequest request = GraphRequest.newMeRequest(
+                accessToken,
+                new GraphRequest.GraphJSONObjectCallback() {
+                    @Override
+                    public void onCompleted(JSONObject object, GraphResponse response) {
+                        final String name=object.optString("name");
+                        final String id=object.optString("id");
+                        final String email=object.optString("email");
+                        final User user=new User();
+                        users.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                User post = dataSnapshot.child(id).getValue(User.class);
+
+                                if(post==null) showRegisterPhone(user, id, name, email);
+                                else loginSuccess();
+
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                            }
+                        });
+                    }
+                });
+        request.executeAsync();
     }
 }

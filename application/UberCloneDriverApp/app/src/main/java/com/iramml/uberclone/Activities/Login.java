@@ -19,6 +19,14 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.facebook.AccessToken;
+import com.facebook.AccessTokenTracker;
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.FacebookSdk;
+import com.facebook.login.LoginManager;
+import com.facebook.login.LoginResult;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -44,7 +52,10 @@ import com.iramml.uberclone.Model.User;
 import com.iramml.uberclone.R;
 import com.rengwuxian.materialedittext.MaterialEditText;
 
+import java.util.Arrays;
+
 import dmax.dialog.SpotsDialog;
+import mehdi.sakout.fancybuttons.FancyButton;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
@@ -52,11 +63,15 @@ public class Login extends AppCompatActivity implements GoogleApiClient.OnConnec
     private GoogleApiClient googleApiClient;
     public static final int SIGN_IN_CODE_GOOGLE=157;
     Button btnSignIn, btnLogIn;
-    TextView txtForgotPassword;
 
     FirebaseHelper firebaseHelper;
     GoogleSignInAccount account;
 
+    //facebook
+    CallbackManager mFacebookCallbackManager;
+    LoginManager mLoginManager;
+    AccessToken accessToken = AccessToken.getCurrentAccessToken();
+    boolean isLoggedIn = accessToken != null && !accessToken.isExpired();
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,7 +79,8 @@ public class Login extends AppCompatActivity implements GoogleApiClient.OnConnec
         CalligraphyConfig.initDefault(new CalligraphyConfig.Builder().setDefaultFontPath("fonts/NotoSans.ttf").setFontAttrId(R.attr.fontPath).build());
         setContentView(R.layout.activity_login);
         firebaseHelper=new FirebaseHelper(this);
-        SignInButton signInButtonGoogle=findViewById(R.id.login_button_Google);
+        FancyButton signInButtonGoogle=findViewById(R.id.login_button_Google);
+        FancyButton signInButtonFacebook=findViewById(R.id.facebookLogin);
         GoogleSignInOptions gso=new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().build();
         googleApiClient=new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, this)
@@ -77,7 +93,17 @@ public class Login extends AppCompatActivity implements GoogleApiClient.OnConnec
                 startActivityForResult(intent, SIGN_IN_CODE_GOOGLE);
             }
         });
-
+        setupFacebookStuff();
+        signInButtonFacebook.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (AccessToken.getCurrentAccessToken() != null){
+                    mLoginManager.logOut();
+                } else {
+                    mLoginManager.logInWithReadPermissions(Login.this, Arrays.asList("email", "user_birthday", "public_profile"));
+                }
+            }
+        });
         btnSignIn=findViewById(R.id.btnSignin);
         btnLogIn=findViewById(R.id.btnLogin);
         btnSignIn.setOnClickListener(new View.OnClickListener() {
@@ -90,15 +116,6 @@ public class Login extends AppCompatActivity implements GoogleApiClient.OnConnec
             @Override
             public void onClick(View view) {
                 firebaseHelper.showLoginDialog();
-            }
-        });
-        txtForgotPassword = (TextView)findViewById(R.id.txtForgotPassword);
-
-        txtForgotPassword.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                firebaseHelper.showDialogForgotPwd();
-                return false;
             }
         });
     }
@@ -116,9 +133,38 @@ public class Login extends AppCompatActivity implements GoogleApiClient.OnConnec
     @Override
     protected void onStart() {
         super.onStart();
+        if(isLoggedIn){
+            startActivity(new Intent(Login.this, DriverHome.class));
+            finish();
+        }
         verifyGoogleAccount();
     }
+    private void setupFacebookStuff() {
 
+        // This should normally be on your application class
+        FacebookSdk.sdkInitialize(getApplicationContext());
+
+        mLoginManager = LoginManager.getInstance();
+        mFacebookCallbackManager = CallbackManager.Factory.create();
+
+        LoginManager.getInstance().registerCallback(mFacebookCallbackManager, new FacebookCallback<LoginResult>() {
+            @Override
+            public void onSuccess(LoginResult loginResult) {
+                //login
+                firebaseHelper.registerByFacebookAccount();
+            }
+
+            @Override
+            public void onCancel() {
+                Toast.makeText(Login.this,"The login was canceled",Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onError(FacebookException error) {
+                Toast.makeText(Login.this,"There was an error in the login",Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -127,6 +173,7 @@ public class Login extends AppCompatActivity implements GoogleApiClient.OnConnec
             GoogleSignInResult result=Auth.GoogleSignInApi.getSignInResultFromIntent(data);
             handleSignInResult(result);
         }
+        mFacebookCallbackManager.onActivityResult(requestCode, resultCode, data);
     }
 
     private void handleSignInResult(GoogleSignInResult result) {

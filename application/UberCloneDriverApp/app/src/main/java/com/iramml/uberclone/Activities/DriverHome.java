@@ -36,6 +36,10 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.facebook.AccessToken;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
+import com.facebook.login.LoginManager;
 import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
 import com.google.android.gms.auth.api.Auth;
@@ -106,6 +110,8 @@ import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.rengwuxian.materialedittext.MaterialEditText;
 import com.squareup.picasso.Picasso;
 
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -158,6 +164,10 @@ public class DriverHome extends AppCompatActivity
 
     FirebaseStorage firebaseStorage;
     StorageReference storageReference;
+
+    //Facebook
+    AccessToken accessToken = AccessToken.getCurrentAccessToken();
+    boolean isLoggedInFacebook = accessToken != null && !accessToken.isExpired();
 
     Runnable drawPathRunnable=new Runnable() {
         @Override
@@ -282,7 +292,6 @@ public class DriverHome extends AppCompatActivity
 
         setUpLocation();
         mService= Common.getGoogleAPI();
-        updateFirebaseToken();
     }
 
     public void initDrawer(){
@@ -307,6 +316,7 @@ public class DriverHome extends AppCompatActivity
         if(Common.currentUser.getAvatarUrl()!=null &&
                 !TextUtils.isEmpty(Common.currentUser.getAvatarUrl()))
         Picasso.get().load(Common.currentUser.getAvatarUrl()).into(imageAvatar);
+        updateFirebaseToken();
     }
 
     private void loadUser(){
@@ -382,8 +392,7 @@ public class DriverHome extends AppCompatActivity
         DatabaseReference tokens=db.getReference(Common.token_tbl);
 
         Token token=new Token(FirebaseInstanceId.getInstance().getToken());
-        if(FirebaseAuth.getInstance().getUid()!=null)tokens.child(FirebaseAuth.getInstance().getUid()).setValue(token);
-        else tokens.child(account.getId()).setValue(token);
+        tokens.child(Common.userID).setValue(token);
     }
 
     private void getDirection(){
@@ -506,6 +515,18 @@ public class DriverHome extends AppCompatActivity
             account = result.getSignInAccount();
             Common.userID=account.getId();
             loadUser();
+        }else if(isLoggedInFacebook){
+            GraphRequest request = GraphRequest.newMeRequest(
+                    accessToken,
+                    new GraphRequest.GraphJSONObjectCallback() {
+                        @Override
+                        public void onCompleted(JSONObject object, GraphResponse response) {
+                            String id=object.optString("id");
+                            Common.userID=id;
+                            loadUser();
+                        }
+                    });
+            request.executeAsync();
         }else{
             Common.userID=FirebaseAuth.getInstance().getCurrentUser().getUid();
             loadUser();
@@ -1020,12 +1041,7 @@ public class DriverHome extends AppCompatActivity
     }
 
     private void signOut() {
-        if(account.getId()==null) {
-            FirebaseAuth.getInstance().signOut();
-            Intent intent=new Intent(DriverHome.this, Login.class);
-            startActivity(intent);
-            finish();
-        }else{
+        if(account!=null) {
             Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(new ResultCallback<Status>() {
                 @Override
                 public void onResult(@NonNull Status status) {
@@ -1038,6 +1054,17 @@ public class DriverHome extends AppCompatActivity
                     }
                 }
             });
+
+        }else if(isLoggedInFacebook){
+            LoginManager.getInstance().logOut();
+            Intent intent = new Intent(DriverHome.this, Login.class);
+            startActivity(intent);
+            finish();
+        }else{
+            FirebaseAuth.getInstance().signOut();
+            Intent intent=new Intent(DriverHome.this, Login.class);
+            startActivity(intent);
+            finish();
         }
     }
 }

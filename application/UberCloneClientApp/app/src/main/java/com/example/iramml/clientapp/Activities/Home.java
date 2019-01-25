@@ -38,6 +38,10 @@ import com.example.iramml.clientapp.Model.User;
 import com.example.iramml.clientapp.Model.Token;
 import com.example.iramml.clientapp.R;
 import com.example.iramml.clientapp.Util.Location;
+import com.facebook.AccessToken;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
+import com.facebook.login.LoginManager;
 import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
 import com.firebase.geofire.GeoQuery;
@@ -90,6 +94,8 @@ import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.rengwuxian.materialedittext.MaterialEditText;
 import com.squareup.picasso.Picasso;
+
+import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.List;
@@ -147,6 +153,12 @@ public class Home extends AppCompatActivity
     ImageView carUberX, carUberBlack;
     boolean isUberX=false;
 
+    //Gooogle
+    private GoogleApiClient googleApiClient;
+    //Facebook
+    AccessToken accessToken = AccessToken.getCurrentAccessToken();
+    boolean isLoggedInFacebook = accessToken != null && !accessToken.isExpired();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -155,7 +167,7 @@ public class Home extends AppCompatActivity
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        loadUser();
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ifcmService=Common.getFCMService();
@@ -277,7 +289,7 @@ public class Home extends AppCompatActivity
         });
 
         setUpLocation();
-        updateFirebaseToken();
+
     }
 
     public void initDrawer(){
@@ -300,9 +312,14 @@ public class Home extends AppCompatActivity
                 !TextUtils.isEmpty(Common.currentUser.getRates()))
             tvStars.setText(Common.currentUser.getRates());
 
+        if(isLoggedInFacebook)
+            Picasso.get().load("https://graph.facebook.com/" + Common.userID + "/picture?width=500&height=500").into(imageAvatar);
+        else if(account.getPhotoUrl()!=null && !TextUtils.isEmpty(account.getPhotoUrl().toString()))
+            Picasso.get().load(account.getPhotoUrl()).into(imageAvatar);
         if(Common.currentUser.getAvatarUrl()!=null &&
                 !TextUtils.isEmpty(Common.currentUser.getAvatarUrl()))
             Picasso.get().load(Common.currentUser.getAvatarUrl()).into(imageAvatar);
+        updateFirebaseToken();
     }
 
     private void loadUser(){
@@ -347,8 +364,7 @@ public class Home extends AppCompatActivity
         DatabaseReference tokens=db.getReference(Common.token_tbl);
 
         Token token=new Token(FirebaseInstanceId.getInstance().getToken());
-        if(FirebaseAuth.getInstance().getUid()!=null) tokens.child(FirebaseAuth.getInstance().getUid()).setValue(token);
-        else tokens.child(account.getId()).setValue(token);
+        tokens.child(Common.userID).setValue(token);
     }
 
     private void requestPickup(String uid) {
@@ -593,12 +609,7 @@ public class Home extends AppCompatActivity
     }
 
     private void signOut() {
-        if(account.getId()==null) {
-            FirebaseAuth.getInstance().signOut();
-            Intent intent=new Intent(Home.this, Login.class);
-            startActivity(intent);
-            finish();
-        }else{
+        if(account!=null) {
             Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(new ResultCallback<Status>() {
                 @Override
                 public void onResult(@NonNull Status status) {
@@ -611,6 +622,16 @@ public class Home extends AppCompatActivity
                     }
                 }
             });
+        }else if(isLoggedInFacebook){
+            LoginManager.getInstance().logOut();
+            Intent intent = new Intent(Home.this, Login.class);
+            startActivity(intent);
+            finish();
+        }else{
+            FirebaseAuth.getInstance().signOut();
+            Intent intent=new Intent(Home.this, Login.class);
+            startActivity(intent);
+            finish();
         }
     }
 
@@ -618,8 +639,23 @@ public class Home extends AppCompatActivity
         if (result.isSuccess()) {
             account = result.getSignInAccount();
             Common.userID=account.getId();
-        }else
+            loadUser();
+        }else if(isLoggedInFacebook){
+            GraphRequest request = GraphRequest.newMeRequest(
+                    accessToken,
+                    new GraphRequest.GraphJSONObjectCallback() {
+                        @Override
+                        public void onCompleted(JSONObject object, GraphResponse response) {
+                            String id=object.optString("id");
+                            Common.userID=id;
+                            loadUser();
+                        }
+                    });
+            request.executeAsync();
+        }else{
             Common.userID=FirebaseAuth.getInstance().getCurrentUser().getUid();
+            loadUser();
+        }
     }
 
     private void setUpLocation() {
