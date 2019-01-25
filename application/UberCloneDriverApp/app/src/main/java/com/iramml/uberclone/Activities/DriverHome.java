@@ -313,6 +313,11 @@ public class DriverHome extends AppCompatActivity
                 !TextUtils.isEmpty(Common.currentUser.getRates()))
             tvStars.setText(Common.currentUser.getRates());
 
+         if(isLoggedInFacebook)
+            Picasso.get().load("https://graph.facebook.com/" + Common.userID + "/picture?width=500&height=500").into(imageAvatar);
+        else if(account!=null)
+            Picasso.get().load(account.getPhotoUrl()).into(imageAvatar);
+
         if(Common.currentUser.getAvatarUrl()!=null &&
                 !TextUtils.isEmpty(Common.currentUser.getAvatarUrl()))
         Picasso.get().load(Common.currentUser.getAvatarUrl()).into(imageAvatar);

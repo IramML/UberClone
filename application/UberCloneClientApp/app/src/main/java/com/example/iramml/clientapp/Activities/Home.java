@@ -314,7 +314,7 @@ public class Home extends AppCompatActivity
 
         if(isLoggedInFacebook)
             Picasso.get().load("https://graph.facebook.com/" + Common.userID + "/picture?width=500&height=500").into(imageAvatar);
-        else if(account.getPhotoUrl()!=null && !TextUtils.isEmpty(account.getPhotoUrl().toString()))
+        else if(account!=null)
             Picasso.get().load(account.getPhotoUrl()).into(imageAvatar);
         if(Common.currentUser.getAvatarUrl()!=null &&
                 !TextUtils.isEmpty(Common.currentUser.getAvatarUrl()))
@@ -609,7 +609,7 @@ public class Home extends AppCompatActivity
     }
 
     private void signOut() {
-        if(account!=null) {
+        if(account.getId()!=null) {
             Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(new ResultCallback<Status>() {
                 @Override
                 public void onResult(@NonNull Status status) {
