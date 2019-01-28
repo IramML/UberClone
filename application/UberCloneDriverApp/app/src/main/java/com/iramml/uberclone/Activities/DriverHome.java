@@ -292,6 +292,7 @@ public class DriverHome extends AppCompatActivity
 
         setUpLocation();
         mService= Common.getGoogleAPI();
+        updateFirebaseToken();
     }
 
     public void initDrawer(){
@@ -321,7 +322,6 @@ public class DriverHome extends AppCompatActivity
         if(Common.currentUser.getAvatarUrl()!=null &&
                 !TextUtils.isEmpty(Common.currentUser.getAvatarUrl()))
         Picasso.get().load(Common.currentUser.getAvatarUrl()).into(imageAvatar);
-        updateFirebaseToken();
     }
 
     private void loadUser(){
@@ -394,10 +394,23 @@ public class DriverHome extends AppCompatActivity
 
     private void updateFirebaseToken() {
         FirebaseDatabase db=FirebaseDatabase.getInstance();
-        DatabaseReference tokens=db.getReference(Common.token_tbl);
+        final DatabaseReference tokens=db.getReference(Common.token_tbl);
 
-        Token token=new Token(FirebaseInstanceId.getInstance().getToken());
-        tokens.child(Common.userID).setValue(token);
+        final Token token=new Token(FirebaseInstanceId.getInstance().getToken());
+        if(FirebaseAuth.getInstance().getUid()!=null) tokens.child(FirebaseAuth.getInstance().getUid()).setValue(token);
+        else if(account!=null) tokens.child(account.getId()).setValue(token);
+        else{
+            GraphRequest request = GraphRequest.newMeRequest(
+                    accessToken,
+                    new GraphRequest.GraphJSONObjectCallback() {
+                        @Override
+                        public void onCompleted(JSONObject object, GraphResponse response) {
+                            String id = object.optString("id");
+                            tokens.child(id).setValue(token);
+                        }
+                    });
+            request.executeAsync();
+        }
     }
 
     private void getDirection(){

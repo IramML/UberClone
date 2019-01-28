@@ -44,6 +44,7 @@ public class Common {
 
     public static boolean driverFound=false;
     public static String driverID="";
+    public static LatLng currenLocation;
 
     public static final String fcmURL="https://fcm.googleapis.com/";
     public static final String googleAPIUrl="https://maps.googleapis.com";

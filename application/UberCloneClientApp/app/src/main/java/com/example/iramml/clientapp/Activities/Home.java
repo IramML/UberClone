@@ -178,6 +178,7 @@ public class Home extends AppCompatActivity
                 // Add a marker in Sydney and move the camera
                 currentLat=response.getLastLocation().getLatitude();
                 currentLng=response.getLastLocation().getLongitude();
+                Common.currenLocation=new LatLng(response.getLastLocation().getLatitude(), response.getLastLocation().getLongitude());
                 if(mPlaceLocation==null) {
                     displayLocation();
                     driversAvailable = FirebaseDatabase.getInstance().getReference(Common.driver_tbl);
@@ -239,7 +240,7 @@ public class Home extends AppCompatActivity
                     if (!Common.driverFound)
                         requestPickup(Common.userID);
                     else
-                        Common.sendRequestToDriver(Common.driverID, ifcmService, getApplicationContext(), new LatLng(currentLat, currentLng));
+                        Common.sendRequestToDriver(Common.driverID, ifcmService, getApplicationContext(), Common.currenLocation);
                 }
             }
         });
@@ -289,7 +290,7 @@ public class Home extends AppCompatActivity
         });
 
         setUpLocation();
-
+        updateFirebaseToken();
     }
 
     public void initDrawer(){
@@ -319,7 +320,6 @@ public class Home extends AppCompatActivity
         if(Common.currentUser.getAvatarUrl()!=null &&
                 !TextUtils.isEmpty(Common.currentUser.getAvatarUrl()))
             Picasso.get().load(Common.currentUser.getAvatarUrl()).into(imageAvatar);
-        updateFirebaseToken();
     }
 
     private void loadUser(){
@@ -361,18 +361,37 @@ public class Home extends AppCompatActivity
 
     private void updateFirebaseToken() {
         FirebaseDatabase db=FirebaseDatabase.getInstance();
-        DatabaseReference tokens=db.getReference(Common.token_tbl);
+        final DatabaseReference tokens=db.getReference(Common.token_tbl);
 
-        Token token=new Token(FirebaseInstanceId.getInstance().getToken());
-        tokens.child(Common.userID).setValue(token);
+        final Token token=new Token(FirebaseInstanceId.getInstance().getToken());
+        if(FirebaseAuth.getInstance().getUid()!=null) tokens.child(FirebaseAuth.getInstance().getUid()).setValue(token);
+        else if(account!=null) tokens.child(account.getId()).setValue(token);
+        else{
+            GraphRequest request = GraphRequest.newMeRequest(
+                    accessToken,
+                    new GraphRequest.GraphJSONObjectCallback() {
+                        @Override
+                        public void onCompleted(JSONObject object, GraphResponse response) {
+                            String id = object.optString("id");
+                            tokens.child(id).setValue(token);
+                        }
+                    });
+            request.executeAsync();
+        }
     }
 
     private void requestPickup(String uid) {
         DatabaseReference dbRequest=FirebaseDatabase.getInstance().getReference(Common.pickup_request_tbl);
         GeoFire mGeofire=new GeoFire(dbRequest);
-        mGeofire.setLocation(uid, new GeoLocation(currentLat, currentLng));
+        mGeofire.setLocation(uid, new GeoLocation(Common.currenLocation.latitude, Common.currenLocation.longitude),
+                new GeoFire.CompletionListener() {
+                    @Override
+                    public void onComplete(String key, DatabaseError error) {
+
+                    }
+                });
         if (riderMarket.isVisible())riderMarket.remove();
-        riderMarket=mMap.addMarker(new MarkerOptions().title(getResources().getString(R.string.pickup_here)).snippet("").position(new LatLng(currentLat, currentLng))
+        riderMarket=mMap.addMarker(new MarkerOptions().title(getResources().getString(R.string.pickup_here)).snippet("").position(new LatLng(Common.currenLocation.latitude, Common.currenLocation.longitude))
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
         riderMarket.showInfoWindow();
         btnRequestPickup.setText(getResources().getString(R.string.getting_uber));
@@ -380,10 +399,13 @@ public class Home extends AppCompatActivity
     }
 
     private void findDriver() {
-        DatabaseReference drivers=FirebaseDatabase.getInstance().getReference(Common.driver_tbl);
-        GeoFire geoFireDrivers=new GeoFire(drivers);
-
-        GeoQuery geoQuery=geoFireDrivers.queryAtLocation(new GeoLocation(currentLat, currentLng), radius);
+        DatabaseReference driverLocation;
+        if(isUberX)
+            driverLocation=FirebaseDatabase.getInstance().getReference(Common.driver_tbl).child("UberX");
+        else
+            driverLocation=FirebaseDatabase.getInstance().getReference(Common.driver_tbl).child("Uber Black");
+        GeoFire geoFire=new GeoFire(driverLocation);
+        GeoQuery geoQuery=geoFire.queryAtLocation(new GeoLocation(Common.currenLocation.latitude, Common.currenLocation.longitude), radius);
         geoQuery.removeAllListeners();
         geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
             @Override
@@ -609,7 +631,7 @@ public class Home extends AppCompatActivity
     }
 
     private void signOut() {
-        if(account.getId()!=null) {
+        if(account!=null) {
             Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(new ResultCallback<Status>() {
                 @Override
                 public void onResult(@NonNull Status status) {
@@ -744,12 +766,10 @@ public class Home extends AppCompatActivity
 
 
         DatabaseReference driverLocation;
-
         if(isUberX)
             driverLocation=FirebaseDatabase.getInstance().getReference(Common.driver_tbl).child("UberX");
         else
             driverLocation=FirebaseDatabase.getInstance().getReference(Common.driver_tbl).child("Uber Black");
-
         GeoFire geoFire=new GeoFire(driverLocation);
 
         GeoQuery geoQuery=geoFire.queryAtLocation(new GeoLocation(location.latitude, location.longitude), distance);
@@ -880,7 +900,8 @@ public class Home extends AppCompatActivity
     public void onInfoWindowClick(Marker marker) {
         if(!marker.getTitle().equals("You")){
             Intent intent=new Intent(Home.this, CallDriver.class);
-            intent.putExtra("driverID", marker.getSnippet().replace("Driver ID: ", ""));
+            String ID= marker.getSnippet().replace("Driver ID: ", "");
+            intent.putExtra("driverID", ID);
             intent.putExtra("lat", currentLat);
             intent.putExtra("lng", currentLng);
             startActivity(intent);
