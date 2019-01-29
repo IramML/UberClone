@@ -166,7 +166,8 @@ public class Home extends AppCompatActivity
         verifyGoogleAccount();
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
+        storage=FirebaseStorage.getInstance();
+        storageReference=storage.getReference();
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -589,7 +590,7 @@ public class Home extends AppCompatActivity
 
                 String imageName=UUID.randomUUID().toString();
                 final StorageReference imageFolder=storageReference.child("images/"+imageName);
-                //FIXME 0.0% progress
+
                 imageFolder.putFile(saveUri)
                         .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                             @Override

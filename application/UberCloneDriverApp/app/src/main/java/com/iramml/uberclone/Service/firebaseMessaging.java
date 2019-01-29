@@ -12,7 +12,6 @@ public class firebaseMessaging extends FirebaseMessagingService{
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         LatLng customerLocation=new Gson().fromJson(remoteMessage.getNotification().getBody(), LatLng.class);
-
         Intent intent=new Intent(getBaseContext(), CustommerCall.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra("lat", customerLocation.latitude);

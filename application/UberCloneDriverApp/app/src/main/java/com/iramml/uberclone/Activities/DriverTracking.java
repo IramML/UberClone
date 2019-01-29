@@ -125,7 +125,6 @@ public class DriverTracking extends AppCompatActivity implements OnMapReadyCallb
                     btnStartTrip.setText("DROP OFF HERE");
                 }else if(btnStartTrip.getText().equals("DROP OFF HERE")){
                     calculateCashFree(pickupLocation, new LatLng(Common.currentLat, Common.currentLng));
-
                 }
             }
         });
@@ -206,7 +205,7 @@ public class DriverTracking extends AppCompatActivity implements OnMapReadyCallb
                 .strokeWidth(5f));
 
         googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.uber_style_map));
-        geoFire = new GeoFire(FirebaseDatabase.getInstance().getReference(Common.driver_tbl));
+        geoFire = new GeoFire(FirebaseDatabase.getInstance().getReference(Common.driver_tbl).child(Common.currentUser.getCarType()));
         GeoQuery geoQuery = geoFire.queryAtLocation(new GeoLocation(riderLat, riderLng), 0.05f);
         geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
             @Override
