@@ -10,6 +10,7 @@ import com.example.iramml.clientapp.Messages.Message;
 import com.example.iramml.clientapp.Messages.Messages;
 import com.example.iramml.clientapp.Model.FCMResponse;
 import com.example.iramml.clientapp.Model.Notification;
+import com.example.iramml.clientapp.Model.Pickup;
 import com.example.iramml.clientapp.Model.User;
 import com.example.iramml.clientapp.Model.Sender;
 import com.example.iramml.clientapp.Model.Token;
@@ -32,6 +33,7 @@ import retrofit2.Response;
 public class Common {
     public static final String driver_tbl="Drivers";
     public static final String user_driver_tbl="DriversInformation";
+    public static final String history_rider = "RiderHistory";
     public static final String user_rider_tbl="RidersInformation";
     public static final String pickup_request_tbl="PickupRequest";
     public static final String CHANNEL_ID_ARRIVED="ARRIVED";
@@ -63,7 +65,7 @@ public class Common {
     public static IGoogleAPI getGoogleService(){
         return GoogleMapsAPI.getClient(googleAPIUrl).create(IGoogleAPI.class);
     }
-    public static void sendRequestToDriver(String driverID, final IFCMService mService, final Context context, final LatLng lastLocation) {
+    public static void sendRequestToDriver(final String driverID, final IFCMService mService, final Context context, final LatLng lastLocation) {
         DatabaseReference tokens=FirebaseDatabase.getInstance().getReference(Common.token_tbl);
 
         tokens.orderByKey().equalTo(driverID).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -71,10 +73,14 @@ public class Common {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for (DataSnapshot postSnapShot:dataSnapshot.getChildren()){
                     Token token=postSnapShot.getValue(Token.class);
-                    String json_lat_lng=new Gson().toJson(lastLocation);
+                    Pickup pickup=new Pickup();
+                    pickup.setLastLocation(lastLocation);
+                    pickup.setID(userID);
+                    pickup.setToken(token);
+                    String json_pickup=new Gson().toJson(pickup);
 
                     String riderToken=FirebaseInstanceId.getInstance().getToken();
-                    Notification data=new Notification(riderToken, json_lat_lng);
+                    Notification data=new Notification("Pickup", json_pickup);
                     Sender content=new Sender(token.getToken(), data);
 
                     mService.sendMessage(content).enqueue(new Callback<FCMResponse>() {

@@ -459,28 +459,6 @@ public class Home extends AppCompatActivity
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.home, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
@@ -488,6 +466,9 @@ public class Home extends AppCompatActivity
         int id = item.getItemId();
 
         switch (id){
+            case R.id.nav_trip_history:
+                showTripHistory();
+                break;
             case R.id.nav_updateInformation:
                 showDialogUpdateInfo();
                 break;
@@ -499,6 +480,11 @@ public class Home extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void showTripHistory() {
+        Intent intent=new Intent(Home.this, TripHistory.class);
+        startActivity(intent);
     }
 
     private void showDialogUpdateInfo() {

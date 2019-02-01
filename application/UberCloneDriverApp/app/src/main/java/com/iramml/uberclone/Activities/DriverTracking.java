@@ -40,17 +40,22 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.iramml.uberclone.Common.Common;
 import com.iramml.uberclone.Helpers.DirectionJSONParser;
 import com.iramml.uberclone.Interfaces.IFCMService;
 import com.iramml.uberclone.Interfaces.googleAPIInterface;
 import com.iramml.uberclone.Interfaces.locationListener;
 import com.iramml.uberclone.Model.FCMResponse;
+import com.iramml.uberclone.Model.History;
 import com.iramml.uberclone.Model.Notification;
 import com.iramml.uberclone.Model.Sender;
 import com.iramml.uberclone.Model.Token;
+import com.iramml.uberclone.Model.User;
 import com.iramml.uberclone.R;
 import com.iramml.uberclone.Util.Location;
 
@@ -59,12 +64,16 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+
+import static com.iramml.uberclone.Common.Common.userID;
 
 public class DriverTracking extends AppCompatActivity implements OnMapReadyCallback , GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener{
 
@@ -83,26 +92,39 @@ public class DriverTracking extends AppCompatActivity implements OnMapReadyCallb
     IFCMService mFCMService;
 
     GeoFire geoFire;
-    String riderID;
+    String riderID, riderToken;
 
     Button btnStartTrip;
 
     LatLng pickupLocation;
 
+    DatabaseReference historyDriver, historyRider, riderInformation, drivers, tokens;
+    FirebaseDatabase database;
+
+    User riderData;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_driver_tracking);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
-        verifyGoogleAccount();
         if(getIntent()!=null){
             riderLat=getIntent().getDoubleExtra("lat",-1.0);
             riderLng=getIntent().getDoubleExtra("lng",-1.0);
             riderID = getIntent().getStringExtra("riderID");
+            riderToken=getIntent().getStringExtra("token");
         }
+        database = FirebaseDatabase.getInstance();
+        historyDriver = database.getReference(Common.history_driver).child(Common.userID);
+        historyRider = database.getReference(Common.history_rider).child(riderID);
+        riderInformation=database.getReference(Common.user_rider_tbl);
+        tokens=database.getReference(Common.token_tbl);
+        drivers= FirebaseDatabase.getInstance().getReference(Common.driver_tbl).child(Common.currentUser.getCarType());
+        geoFire=new GeoFire(drivers);
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
+        verifyGoogleAccount();
+
 
         mService = Common.getGoogleAPI();
         mFCMService=Common.getFCMService();
@@ -126,6 +148,21 @@ public class DriverTracking extends AppCompatActivity implements OnMapReadyCallb
                 }else if(btnStartTrip.getText().equals("DROP OFF HERE")){
                     calculateCashFree(pickupLocation, new LatLng(Common.currentLat, Common.currentLng));
                 }
+            }
+        });
+        getRiderData();
+    }
+
+    private void getRiderData() {
+        riderInformation.child(riderID).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                riderData=dataSnapshot.getValue(User.class);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
             }
         });
     }
@@ -162,7 +199,33 @@ public class DriverTracking extends AppCompatActivity implements OnMapReadyCallb
 
                                 Double timeValue=Double.parseDouble(timeText.replaceAll("[^0-9\\\\.]+", ""));
 
-                                sendDropOffNotification(riderID);
+                                sendDropOffNotification(riderToken);
+                                Calendar calendar = Calendar.getInstance();
+                                String date = String.format("%s, %d/%d", convertToDayOfWeek(calendar.get(Calendar.DAY_OF_WEEK)), calendar.get(Calendar.DAY_OF_MONTH), calendar.get(Calendar.MONTH));
+
+                                History driverHistory = new History();
+                                driverHistory.setName(riderData.getName());
+                                driverHistory.setStartAddress(legsObject.getString("start_address"));
+                                driverHistory.setEndAddress(legsObject.getString("end_address"));
+                                driverHistory.setTime(String.valueOf(timeValue));
+                                driverHistory.setDistance(String.valueOf(distanceValue));
+                                driverHistory.setTotal(Common.formulaPrice(distanceValue, timeValue));
+                                driverHistory.setLocationStart(String.format("%f,%f", pickupLocation.latitude, pickupLocation.longitude));
+                                driverHistory.setLocationEnd(String.format("%f,%f", Common.currentLat, Common.currentLng));
+                                driverHistory.setTripDate(date);
+                                historyDriver.push().setValue(driverHistory);
+
+                                History riderHistory = new History();
+                                riderHistory.setName(Common.currentUser.getName());
+                                riderHistory.setStartAddress(legsObject.getString("start_address"));
+                                riderHistory.setEndAddress(legsObject.getString("end_address"));
+                                riderHistory.setTime(String.valueOf(timeValue));
+                                riderHistory.setDistance(String.valueOf(distanceValue));
+                                riderHistory.setTotal(Common.formulaPrice(distanceValue, timeValue));
+                                riderHistory.setLocationStart(String.format("%f,%f", pickupLocation.latitude, pickupLocation.longitude));
+                                riderHistory.setLocationEnd(String.format("%f,%f", Common.currentLat, Common.currentLng));
+                                riderHistory.setTripDate(date);
+                                historyRider.push().setValue(riderHistory);
 
                                 Intent intent = new Intent(DriverTracking.this, TripDetail.class);
                                 intent.putExtra("start_address", legsObject.getString("start_address"));
@@ -210,7 +273,7 @@ public class DriverTracking extends AppCompatActivity implements OnMapReadyCallb
         geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
             @Override
             public void onKeyEntered(String key, GeoLocation location) {
-                sendArrivedNotification(riderID);
+                sendArrivedNotification(riderToken);
                 btnStartTrip.setEnabled(true);
             }
 
@@ -278,14 +341,40 @@ public class DriverTracking extends AppCompatActivity implements OnMapReadyCallb
         });
 
     }
-
+    private String convertToDayOfWeek(int day) {
+        switch(day){
+            case Calendar.SUNDAY:
+                return "SUNDAY";
+            case Calendar.MONDAY:
+                return "MONDAY";
+            case Calendar.TUESDAY:
+                return "TUESDAY";
+            case Calendar.WEDNESDAY:
+                return "WEDNESDAY";
+            case Calendar.THURSDAY:
+                return "THURSDAY";
+            case Calendar.FRIDAY:
+                return "FRIDAY";
+            case Calendar.SATURDAY:
+                return "SATURDAY";
+            default:
+                return "UNK";
+        }
+    }
     private void displayLocation(){
         //add driver location
         if(driverMarker!=null)driverMarker.remove();
         driverMarker=mMap.addMarker(new MarkerOptions().position(new LatLng(Common.currentLat, Common.currentLng))
         .title("You").icon(BitmapDescriptorFactory.fromResource(R.drawable.marker)));
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(Common.currentLat, Common.currentLng), 14f));
+        geoFire.setLocation(Common.userID,
+                new GeoLocation(Common.currentLat, Common.currentLng),
+                new GeoFire.CompletionListener() {
+                    @Override
+                    public void onComplete(String key, DatabaseError error) {
 
+                    }
+                });
         //remove route
         if(direction!=null)direction.remove();
           getDirection();

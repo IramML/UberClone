@@ -720,13 +720,6 @@ public class DriverHome extends AppCompatActivity
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.drawer_home, menu);
-        return true;
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
@@ -746,15 +739,10 @@ public class DriverHome extends AppCompatActivity
         int id = item.getItemId();
         switch (id){
             case R.id.nav_trip_history:
+                showTripHistory();
                 break;
             case R.id.nav_car_type:
                 showDialogUpdateCarType();
-                break;
-            case R.id.nav_way_bill:
-                break;
-            case R.id.nav_help:
-                break;
-            case R.id.nav_settings:
                 break;
             case R.id.nav_update_info:
                 showDialogUpdateInfo();
@@ -770,6 +758,11 @@ public class DriverHome extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void showTripHistory() {
+        Intent intent=new Intent(DriverHome.this, TripHistory.class);
+        startActivity(intent);
     }
 
     private void showDialogUpdateCarType() {

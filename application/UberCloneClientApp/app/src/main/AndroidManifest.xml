@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.iramml.clientapp">
-
     <!--
          The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
          Google Maps Android API v2, but you must specify either coarse or fine
@@ -21,6 +20,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".Activities.TripHistory" android:parentActivityName=".Activities.Home"></activity>
+
         <uses-library
             android:name="org.apache.http.legacy"
             android:required="false" />
@@ -61,9 +62,11 @@
         </service>
 
         <activity android:name=".Activities.RateActivity" />
-        <activity android:name=".Activities.CallDriver"></activity>
+        <activity android:name=".Activities.CallDriver" />
 
-        <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/>
+        <meta-data
+            android:name="com.facebook.sdk.ApplicationId"
+            android:value="@string/facebook_app_id" />
     </application>
 
 </manifest>

@@ -37,7 +37,7 @@ public class CustommerCall extends AppCompatActivity {
 
     googleAPIInterface mService;
     IFCMService mFCMService;
-    String riderID;
+    String riderID, token;
 
     double lat, lng;
     @Override
@@ -60,6 +60,7 @@ public class CustommerCall extends AppCompatActivity {
             lat=getIntent().getDoubleExtra("lat", -1.0);
             lng=getIntent().getDoubleExtra("lng", -1.0);
             riderID=getIntent().getStringExtra("rider");
+            token=getIntent().getStringExtra("token");
             getDirection(lat, lng);
         }else finish();
         btnDecline.setOnClickListener(new View.OnClickListener() {
@@ -75,6 +76,7 @@ public class CustommerCall extends AppCompatActivity {
                 intent.putExtra("lat", lat);
                 intent.putExtra("lng", lng);
                 intent.putExtra("riderID", riderID);
+                intent.putExtra("token", token);
                 startActivity(intent);
                 finish();
             }

@@ -11,15 +11,6 @@
             android:id="@+id/nav_car_type"
             android:title="UPDATE VEHICLE TYPE" />
         <item
-            android:id="@+id/nav_way_bill"
-            android:title="WAYBILL" />
-        <item
-            android:id="@+id/nav_help"
-            android:title="HELP" />
-        <item
-            android:id="@+id/nav_settings"
-            android:title="SETTINGS" />
-        <item
             android:id="@+id/nav_change_pwd"
             android:title="CHANGE PASSWORD" />
         <item

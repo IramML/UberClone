@@ -94,7 +94,6 @@ public class TripDetail extends FragmentActivity implements OnMapReadyCallback {
                 return "SATURDAY";
             default:
                 return "UNK";
-
         }
     }
 }
