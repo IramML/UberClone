@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">UC Rider</string>
+    <string name="google_direction_api">AIzaSyDcUwk5nBq2FTZsbWDVt1gQKW1MZYw5Ioo</string>
+    <string name="title_activity_main">Map</string>
+    <string name="title_activity_home">Home</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Android Studio</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+    <string name="tv_login_title">PASAJERO</string>
+    <string name="tv_login_subtitle">UBER CLONE</string>
+    <string name="login">INICIAR SESIÓN</string>
+    <string name="signin">REGISTRARSE</string>
+    <string name="btn_accept">ACEPTAR</string>
+    <string name="btn_decline">RECHAZAR</string>
+    <string name="permission_denied">Permiso denegado</string>
+    <string name="request_send">Solicitud enviada</string>
+    <string name="permission_denied_location">Se requiere el permiso para obtener tu ubicación</string>
+    <string name="cancelled">Cancelado</string>
+    <string name="could_not_login">No se pudo iniciar sesión</string>
+    <string name="device_not_supported">Este dispositivo no es compatible</string>
+    <string name="cannot_get_location">No se pudo obtener la ubicación</string>
+    <string name="sent_failed">Envio fallido</string>
+    <string name="fill_fields">Por favor, rellena los campos</string>
+    <string name="enter_email">Ingrese el correo electrónico</string>
+    <string name="enter_password">Ingrese la contraseña</string>
+    <string name="enter_name">Ingrese su nombre</string>
+    <string name="enter_phone">Ingrese un número de teléfono</string>
+    <string name="password_short">Contraseña demasiado corta</string>
+    <string name="failed">Ha fallado </string>
+    <string name="cancel">Cancelar</string>
+    <string name="register">REGISTRAR</string>
+    <string name="registered">Registrado</string>
+    <string name="pickup_request">Solicitud de recogida</string>
+    <string name="pickup_here">Recoger aquí</string>
+    <string name="optional">Opcional</string>
+    <string name="email">Correo</string>
+    <string name="password">Contraseña</string>
+    <string name="name">Nombre</string>
+    <string name="phone">Teléfono</string>
+    <string name="call_driver">Llamar conductor</string>
+    <string name="getting_uber">Obteniendo tu UBER&#8230;</string>
+    <string name="you">Tú</string>
+</resources>
