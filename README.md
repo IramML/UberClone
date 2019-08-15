@@ -21,4 +21,4 @@
 ## Screenshots
 |Driver Application|Rider Application|
 |---|---|
-|![ScreenshotDriverApp00](images/Screenshot_DriverApp_00.png)|![ScreenshotRiderApp00](images/Screenshot_RiderApp_00.png)|
+|![ScreenshotDriverApp00](Images/Screenshot_DriverApp_00.png)|![ScreenshotRiderApp00](Images/Screenshot_RiderApp_00.png)|
