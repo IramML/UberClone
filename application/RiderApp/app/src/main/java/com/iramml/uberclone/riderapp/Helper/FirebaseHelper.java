@@ -13,7 +13,7 @@ import android.view.View;
 
 import com.iramml.uberclone.riderapp.Activities.Home;
 import com.iramml.uberclone.riderapp.Common.Common;
-import com.iramml.uberclone.riderapp.Model.User;
+import com.iramml.uberclone.riderapp.Model.firebase.User;
 import com.iramml.uberclone.riderapp.R;
 import com.facebook.AccessToken;
 import com.facebook.GraphRequest;

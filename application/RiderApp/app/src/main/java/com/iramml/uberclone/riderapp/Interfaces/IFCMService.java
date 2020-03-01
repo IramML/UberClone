@@ -1,7 +1,7 @@
 package com.iramml.uberclone.riderapp.Interfaces;
 
-import com.iramml.uberclone.riderapp.Model.FCMResponse;
-import com.iramml.uberclone.riderapp.Model.Sender;
+import com.iramml.uberclone.riderapp.Model.fcm.FCMResponse;
+import com.iramml.uberclone.riderapp.Model.fcm.Sender;
 
 import retrofit2.Call;
 import retrofit2.http.Body;

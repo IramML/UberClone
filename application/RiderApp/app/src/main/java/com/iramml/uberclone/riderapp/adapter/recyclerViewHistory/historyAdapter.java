@@ -1,4 +1,4 @@
-package com.iramml.uberclone.riderapp.recyclerViewHistory;
+package com.iramml.uberclone.riderapp.adapter.recyclerViewHistory;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -8,7 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.iramml.uberclone.riderapp.Model.History;
+import com.iramml.uberclone.riderapp.Model.firebase.History;
 import com.iramml.uberclone.riderapp.R;
 
 import java.util.ArrayList;

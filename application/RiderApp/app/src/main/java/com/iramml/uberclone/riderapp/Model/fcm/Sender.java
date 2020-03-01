@@ -1,4 +1,6 @@
-package com.iramml.uberclone.riderapp.Model;
+package com.iramml.uberclone.riderapp.Model.fcm;
+
+import com.iramml.uberclone.riderapp.Model.fcm.Notification;
 
 public class Sender {
     public String to;

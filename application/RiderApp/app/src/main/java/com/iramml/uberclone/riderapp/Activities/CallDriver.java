@@ -10,7 +10,7 @@ import android.widget.TextView;
 
 import com.iramml.uberclone.riderapp.Common.Common;
 import com.iramml.uberclone.riderapp.Interfaces.IFCMService;
-import com.iramml.uberclone.riderapp.Model.User;
+import com.iramml.uberclone.riderapp.Model.firebase.User;
 import com.iramml.uberclone.riderapp.R;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.database.DataSnapshot;

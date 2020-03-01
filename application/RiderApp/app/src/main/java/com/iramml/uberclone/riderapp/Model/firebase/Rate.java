@@ -1,4 +1,4 @@
-package com.iramml.uberclone.riderapp.Model;
+package com.iramml.uberclone.riderapp.Model.firebase;
 
 public class Rate {
     private String rates, comment;

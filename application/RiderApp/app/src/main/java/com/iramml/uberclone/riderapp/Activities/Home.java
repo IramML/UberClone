@@ -4,14 +4,17 @@ import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -22,19 +25,25 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
 import com.iramml.uberclone.riderapp.Common.Common;
 import com.iramml.uberclone.riderapp.Fragments.BottomSheetRiderFragment;
 import com.iramml.uberclone.riderapp.Helper.CustomInfoWindow;
+import com.iramml.uberclone.riderapp.Interfaces.HttpResponse;
 import com.iramml.uberclone.riderapp.Interfaces.IFCMService;
 import com.iramml.uberclone.riderapp.Interfaces.locationListener;
 import com.iramml.uberclone.riderapp.Messages.Errors;
 import com.iramml.uberclone.riderapp.Messages.Message;
-import com.iramml.uberclone.riderapp.Model.User;
-import com.iramml.uberclone.riderapp.Model.Token;
+import com.iramml.uberclone.riderapp.Model.firebase.User;
+import com.iramml.uberclone.riderapp.Model.firebase.Token;
+import com.iramml.uberclone.riderapp.Model.placesapi.PlacesResponse;
+import com.iramml.uberclone.riderapp.Model.placesapi.Results;
 import com.iramml.uberclone.riderapp.R;
 import com.iramml.uberclone.riderapp.Util.Location;
 import com.facebook.AccessToken;
@@ -50,16 +59,12 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.OptionalPendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.places.AutocompleteFilter;
 import com.google.android.gms.location.places.Place;
-import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -67,7 +72,6 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -85,7 +89,9 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.google.maps.android.SphericalUtil;
+import com.iramml.uberclone.riderapp.Util.NetworkUtil;
+import com.iramml.uberclone.riderapp.adapter.RecyclerViewPlaces.ClickListener;
+import com.iramml.uberclone.riderapp.adapter.RecyclerViewPlaces.PlacesAdapter;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
 import com.karumi.dexter.PermissionToken;
@@ -96,6 +102,9 @@ import com.squareup.picasso.Picasso;
 
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -107,71 +116,50 @@ import dmax.dialog.SpotsDialog;
 public class Home extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
         GoogleMap.OnInfoWindowClickListener {
-
-    Toolbar toolbar;
-    Location location=null;
+    private ImageView carUberX, carUberBlack;
+    private Button btnRequestPickup;
+    private Toolbar toolbar;
     private GoogleMap mMap;
-    Marker riderMarket, destinationMarker;
-    GoogleSignInAccount account;
+    private LinearLayout llPickupInput, llDestinationInput, llPickupPlace, llDestinationPlace;
+    private EditText etFinalPickup, etFinalDestination, etPickup, etDestination;
+    private RecyclerView rvPickupPlaces, rvDestinationPlaces;
+    private GoogleSignInAccount account;
+    private SupportMapFragment mapFragment;
 
-    DatabaseReference drivers;
-    GeoFire geoFire;
-
-    private GoogleApiClient mGoogleApiClient;
-
-    Double currentLat;
-    Double currentLng;
-
-    private static final int REQUEST_CODE_PERMISSION=100;
-    private static final int PLAY_SERVICES_REQUEST_CODE=2001;
-
-    SupportMapFragment mapFragment;
-
-    ImageView imgExpandable;
-    Button btnRequestPickup;
-    BottomSheetRiderFragment bottomSheetRiderFragment;
-
-    int radius=1; // km
-    int distance=1;
-    private static final int LIMIT=3;
-
-    IFCMService ifcmService;
-
-    DatabaseReference driversAvailable;
-
-    PlaceAutocompleteFragment placeLocation, placeDestination;
-    AutocompleteFilter typeFilter;
-    String mPlaceLocation, mPlaceDestination;
-
-    CircleImageView imgUser;
-    TextView txRiderName, tvStars;
-
-    FirebaseStorage storage;
-    StorageReference storageReference;
-
-    ImageView carUberX, carUberBlack;
-    boolean isUberX=false;
+    private Marker riderMarket, destinationMarker;
+    private ArrayList<Marker> driverMarkers=new ArrayList<>();
 
     //Gooogle
-    private GoogleApiClient googleApiClient;
-    //Facebook
+    private GoogleApiClient mGoogleApiClient;
     AccessToken accessToken = AccessToken.getCurrentAccessToken();
     boolean isLoggedInFacebook = accessToken != null && !accessToken.isExpired();
+
+    private DatabaseReference driversAvailable;
+    private FirebaseStorage storage;
+    private StorageReference storageReference;
+
+    private IFCMService ifcmService;
+
+    private Location location;
+    private NetworkUtil networkUtil;
+
+    private String mPlaceLocation, mPlaceDestination;
+    private Double currentLat, currentLng;
+    private boolean isUberX=false, pickupPlacesSelected=false;
+    private int radius=1, distance=1; // km
+    private static final int LIMIT=3;
+    private String URL_BASE_API_PLACES="https://maps.googleapis.com/maps/api/place/textsearch/json?";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+        initViews();
         verifyGoogleAccount();
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
         storage=FirebaseStorage.getInstance();
         storageReference=storage.getReference();
-
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
         ifcmService=Common.getFCMService();
-
+        networkUtil=new NetworkUtil(this);
         location=new Location(this, new locationListener() {
             @Override
             public void locationResponse(LocationResult response) {
@@ -179,8 +167,8 @@ public class Home extends AppCompatActivity
                 currentLat=response.getLastLocation().getLatitude();
                 currentLng=response.getLastLocation().getLongitude();
                 Common.currenLocation=new LatLng(response.getLastLocation().getLatitude(), response.getLastLocation().getLongitude());
+                displayLocation();
                 if(mPlaceLocation==null) {
-                    displayLocation();
                     driversAvailable = FirebaseDatabase.getInstance().getReference(Common.driver_tbl);
                     driversAvailable.addValueEventListener(new ValueEventListener() {
                         @Override
@@ -213,7 +201,6 @@ public class Home extends AppCompatActivity
                     carUberX.setImageResource(R.drawable.car_cui_select);
                     carUberBlack.setImageResource(R.drawable.car_vip);
                 }
-                mMap.clear();
                 loadAllAvailableDriver(new LatLng(currentLat, currentLng));
             }
         });
@@ -227,7 +214,6 @@ public class Home extends AppCompatActivity
                     carUberX.setImageResource(R.drawable.car_cui);
                     carUberBlack.setImageResource(R.drawable.car_vip_select);
                 }
-                mMap.clear();
                 loadAllAvailableDriver(new LatLng(currentLat, currentLng));
             }
         });
@@ -244,53 +230,81 @@ public class Home extends AppCompatActivity
                 }
             }
         });
-
-        placeDestination=(PlaceAutocompleteFragment)getFragmentManager().findFragmentById(R.id.placeDestination);
-        placeLocation=(PlaceAutocompleteFragment)getFragmentManager().findFragmentById(R.id.placeLocation);
-
-        typeFilter=new AutocompleteFilter.Builder()
-                .setTypeFilter(AutocompleteFilter.TYPE_FILTER_ADDRESS)
-                .setTypeFilter(3)
-                .build();
-
-        placeLocation.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+        etFinalPickup.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
-            public void onPlaceSelected(Place place) {
-                mPlaceLocation=place.getAddress().toString();
-                mMap.clear();
+            public void onFocusChange(View view, boolean b) {
+                if(b){
+                    llPickupInput.setVisibility(View.VISIBLE);
+                    llPickupPlace.setVisibility(View.GONE);
+                    llDestinationInput.setVisibility(View.GONE);
+                    llDestinationPlace.setVisibility(View.GONE);
+                    etPickup.requestFocus();
+                }
+            }
+        });
+        etFinalDestination.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean b) {
+                if(b){
+                    llPickupInput.setVisibility(View.GONE);
+                    llPickupPlace.setVisibility(View.GONE);
+                    llDestinationInput.setVisibility(View.VISIBLE);
+                    llDestinationPlace.setVisibility(View.GONE);
+                    etDestination.requestFocus();
+                }
+            }
+        });
+        etPickup.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
-                riderMarket=mMap.addMarker(new MarkerOptions().position(place.getLatLng())
-                                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.icon_marker))
-                                            .title("Pickup Here"));
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(), 15.0f));
             }
 
             @Override
-            public void onError(Status status) {
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                getPlacesByString(charSequence.toString(), true);
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
 
             }
         });
-        placeDestination.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+        etDestination.addTextChangedListener(new TextWatcher() {
             @Override
-            public void onPlaceSelected(Place place) {
-                mPlaceDestination=place.getAddress().toString();
-                mMap.addMarker(new MarkerOptions().position(place.getLatLng())
-                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.icon_destination_marker))
-                                .title("Destination"));
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(), 15.0f));
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
-                BottomSheetRiderFragment mBottomSheet=BottomSheetRiderFragment.newInstance(mPlaceLocation, mPlaceDestination, false);
-                mBottomSheet.show(getSupportFragmentManager(), mBottomSheet.getTag());
             }
 
             @Override
-            public void onError(Status status) {
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                getPlacesByString(charSequence.toString(), false);
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
 
             }
         });
-
-        setUpLocation();
         updateFirebaseToken();
+    }
+
+    private void initViews() {
+        llPickupInput = findViewById(R.id.ll_pickup_input);
+        llPickupPlace = findViewById(R.id.ll_pickup_place);
+        llDestinationInput = findViewById(R.id.ll_destination_input);
+        llDestinationPlace = findViewById(R.id.ll_destination_place);
+        etFinalPickup = findViewById(R.id.et_final_pickup_location);
+        etFinalDestination = findViewById(R.id.et_final_destination);
+        etDestination = findViewById(R.id.et_destination);
+        etPickup = findViewById(R.id.et_pickup);
+        rvPickupPlaces = findViewById(R.id.rv_pickup_places);
+        rvPickupPlaces.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+        rvDestinationPlaces = findViewById(R.id.rv_destination_places);
+        rvDestinationPlaces.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+
+        toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
     }
 
     public void initDrawer(){
@@ -666,59 +680,8 @@ public class Home extends AppCompatActivity
         }
     }
 
-    private void setUpLocation() {
-        if(ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION)!= PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)!= PackageManager.PERMISSION_GRANTED){
-            ActivityCompat.requestPermissions(this, new String[]{
-                    android.Manifest.permission.ACCESS_COARSE_LOCATION,
-                    android.Manifest.permission.ACCESS_FINE_LOCATION
-            }, REQUEST_CODE_PERMISSION);
-        }else{
-            if (checkPlayServices()){
-                buildGoogleApiClient();
-                displayLocation();
-            }
-        }
-    }
-
-    private void buildGoogleApiClient() {
-        mGoogleApiClient=new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
-                .build();
-        mGoogleApiClient.connect();
-    }
-
-    private boolean checkPlayServices() {
-        int resultCode= GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
-        if (resultCode!= ConnectionResult.SUCCESS){
-            if(GooglePlayServicesUtil.isUserRecoverableError(resultCode))
-                GooglePlayServicesUtil.getErrorDialog(resultCode, this, PLAY_SERVICES_REQUEST_CODE).show();
-            else {
-                Message.messageError(this, Errors.NOT_SUPPORT);
-                finish();
-            }
-            return false;
-        }
-        return true;
-    }
-
     private void displayLocation(){
         if (currentLat!=null && currentLng!=null){
-            LatLng center=new LatLng(currentLat, currentLng);
-            LatLng northSide=SphericalUtil.computeOffset(center, 100000, 0);
-            LatLng southSide=SphericalUtil.computeOffset(center, 100000, 180);
-
-            LatLngBounds bounds=LatLngBounds.builder()
-                    .include(northSide)
-                    .include(southSide)
-                    .build();
-            placeLocation.setBoundsBias(bounds);
-            placeLocation.setFilter(typeFilter);
-
-            placeDestination.setBoundsBias(bounds);
-            placeDestination.setFilter(typeFilter);
             //presence system
             driversAvailable = FirebaseDatabase.getInstance().getReference(Common.driver_tbl);
             driversAvailable.addValueEventListener(new ValueEventListener() {
@@ -743,12 +706,19 @@ public class Home extends AppCompatActivity
     }
 
     private void loadAllAvailableDriver(final LatLng location) {
-        mMap.clear();
+        for (Marker driverMarker:driverMarkers) {
+            driverMarker.remove();
+            driverMarkers.remove(driverMarker);
+        }
+        if(!pickupPlacesSelected) {
+            if (riderMarket != null)
+                riderMarket.remove();
 
-        riderMarket = mMap.addMarker(new MarkerOptions().position(location)
-                .title(getResources().getString(R.string.you))
-                .icon(BitmapDescriptorFactory.fromResource(R.drawable.icon_marker)));
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(location, 15.0f));
+            riderMarket = mMap.addMarker(new MarkerOptions().position(location)
+                    .title(getResources().getString(R.string.you))
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.icon_marker)));
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(location, 15.0f));
+        }
 
 
         DatabaseReference driverLocation;
@@ -778,8 +748,8 @@ public class Home extends AppCompatActivity
                         else phone="Phone: none";
 
 
-                        mMap.addMarker(new MarkerOptions().position(new LatLng(location.latitude, location.longitude)).flat(true)
-                                .title(name).snippet("Driver ID: "+dataSnapshot.getKey()).icon(BitmapDescriptorFactory.fromResource(R.drawable.car)));
+                        driverMarkers.add(mMap.addMarker(new MarkerOptions().position(new LatLng(location.latitude, location.longitude)).flat(true)
+                                .title(name).snippet("Driver ID: "+dataSnapshot.getKey()).icon(BitmapDescriptorFactory.fromResource(R.drawable.car))));
 
                     }
 
@@ -844,20 +814,7 @@ public class Home extends AppCompatActivity
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        switch (requestCode){
-            case REQUEST_CODE_PERMISSION:
-                if (grantResults.length>0 && grantResults[0]== PackageManager.PERMISSION_GRANTED){
-                    location.onRequestPermissionResult(requestCode, permissions, grantResults);
-                    if (checkPlayServices()){
-                        buildGoogleApiClient();
-                        displayLocation();
-                    }
-                }
-                break;
-            case PLAY_SERVICES_REQUEST_CODE:
-                break;
-        }
+        location.onRequestPermissionResult(requestCode, permissions, grantResults);
     }
 
     @Override
@@ -867,9 +824,15 @@ public class Home extends AppCompatActivity
     }
 
     @Override
-    public void onConnected(@Nullable Bundle bundle) {
+    protected void onStart() {
+        super.onStart();
         displayLocation();
         location.inicializeLocation();
+    }
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+
     }
 
     @Override
@@ -893,4 +856,98 @@ public class Home extends AppCompatActivity
             startActivity(intent);
         }
     }
+
+    private void getPlacesByString(String s, final boolean isPickup){
+        String queryEncode= s.toString();
+        try {
+            queryEncode = URLEncoder.encode(s.toString(),"UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        String query="&query="+queryEncode;
+        String location="&location="+ Common.currenLocation.latitude +","+Common.currenLocation.longitude;
+        String radius="radius=1500";
+        String key="&key="+ getResources().getString(R.string.google_direction_api);
+        String url=(URL_BASE_API_PLACES+radius+location+query+key).replaceAll(" ", "%20");
+
+        Log.d("URL_PLACES", url);
+        networkUtil.httpRequest(url, new HttpResponse() {
+            @Override
+            public void httpResponseSuccess(String response) {
+                pickupPlacesSelected=true;
+                Gson gson=new Gson();
+                PlacesResponse placesResponse=gson.fromJson(response, PlacesResponse.class);
+                for(Results result: placesResponse.results){
+                    if(result.geometry.location==null){
+                        placesResponse.results.remove(result);
+                    }else if(result.geometry.location.lat==null || result.geometry.location.lat.equals("") || result.geometry.location.lat.equals("0.0")){
+                        placesResponse.results.remove(result);
+                    }else if(result.geometry.location.lng==null || result.geometry.location.lng.equals("") || result.geometry.location.lng.equals("0.0")){
+                        placesResponse.results.remove(result);
+                    }
+                }
+                if(isPickup)
+                    implementPickupRecyclerView(placesResponse.results);
+                else
+                    implementDestinationRecyclerView(placesResponse.results);
+                
+            }
+        });
+    }
+
+    private void implementPickupRecyclerView(final ArrayList<Results> results) {
+        PlacesAdapter placesAdapter=new PlacesAdapter(this, results, new ClickListener() {
+            @Override
+            public void onClick(View view, int index) {
+                mPlaceLocation=results.get(index).formatted_address;
+                etFinalPickup.setText(mPlaceLocation);
+
+                llPickupInput.setVisibility(View.GONE);
+                llPickupPlace.setVisibility(View.VISIBLE);
+                llDestinationInput.setVisibility(View.GONE);
+                llDestinationPlace.setVisibility(View.VISIBLE);
+
+                Double lat=Double.valueOf(results.get(index).geometry.location.lat);
+                Double lng=Double.valueOf(results.get(index).geometry.location.lng);
+                LatLng latLng=new LatLng(lat, lng);
+                if(riderMarket!=null)
+                    riderMarket.remove();
+                riderMarket=mMap.addMarker(new MarkerOptions().position(latLng)
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.icon_marker))
+                        .title("Pickup Here"));
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15.0f));
+            }
+        });
+        rvPickupPlaces.setAdapter(placesAdapter);
+    }
+
+    private void implementDestinationRecyclerView(final ArrayList<Results> results) {
+        PlacesAdapter placesAdapter=new PlacesAdapter(this, results, new ClickListener() {
+            @Override
+            public void onClick(View view, int index) {
+                mPlaceDestination=results.get(index).formatted_address;
+                etFinalDestination.setText(mPlaceDestination);
+
+                llPickupInput.setVisibility(View.GONE);
+                llPickupPlace.setVisibility(View.VISIBLE);
+                llDestinationInput.setVisibility(View.GONE);
+                llDestinationPlace.setVisibility(View.VISIBLE);
+
+                Double lat=Double.valueOf(results.get(index).geometry.location.lat);
+                Double lng=Double.valueOf(results.get(index).geometry.location.lng);
+                LatLng latLng=new LatLng(lat, lng);
+                if(destinationMarker!=null)
+                    destinationMarker.remove();
+                destinationMarker=mMap.addMarker(new MarkerOptions().position(latLng)
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.icon_destination_marker))
+                        .title("Destination"));
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15.0f));
+
+                BottomSheetRiderFragment mBottomSheet=BottomSheetRiderFragment.newInstance(mPlaceLocation, mPlaceDestination, false);
+                mBottomSheet.show(getSupportFragmentManager(), mBottomSheet.getTag());
+            }
+        });
+        rvDestinationPlaces.setAdapter(placesAdapter);
+    }
+
 }

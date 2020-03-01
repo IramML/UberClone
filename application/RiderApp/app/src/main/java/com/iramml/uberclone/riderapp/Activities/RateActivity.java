@@ -9,7 +9,7 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.iramml.uberclone.riderapp.Common.Common;
-import com.iramml.uberclone.riderapp.Model.Rate;
+import com.iramml.uberclone.riderapp.Model.firebase.Rate;
 import com.iramml.uberclone.riderapp.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;

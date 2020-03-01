@@ -12,10 +12,10 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 
 import com.iramml.uberclone.riderapp.Common.Common;
-import com.iramml.uberclone.riderapp.Model.History;
+import com.iramml.uberclone.riderapp.Model.firebase.History;
 import com.iramml.uberclone.riderapp.R;
-import com.iramml.uberclone.riderapp.recyclerViewHistory.ClickListener;
-import com.iramml.uberclone.riderapp.recyclerViewHistory.historyAdapter;
+import com.iramml.uberclone.riderapp.adapter.recyclerViewHistory.ClickListener;
+import com.iramml.uberclone.riderapp.adapter.recyclerViewHistory.historyAdapter;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;

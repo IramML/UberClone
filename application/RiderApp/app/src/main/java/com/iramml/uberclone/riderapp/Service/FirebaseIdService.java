@@ -1,7 +1,7 @@
 package com.iramml.uberclone.riderapp.Service;
 
 import com.iramml.uberclone.riderapp.Common.Common;
-import com.iramml.uberclone.riderapp.Model.Token;
+import com.iramml.uberclone.riderapp.Model.firebase.Token;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;

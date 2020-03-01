@@ -1,4 +1,4 @@
-package com.iramml.uberclone.riderapp.Model;
+package com.iramml.uberclone.riderapp.Model.firebase;
 
 public class User {
     private String email,password,name,phone, avatarUrl, rates;

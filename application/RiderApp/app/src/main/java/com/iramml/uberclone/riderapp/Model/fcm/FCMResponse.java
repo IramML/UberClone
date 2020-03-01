@@ -1,4 +1,4 @@
-package com.iramml.uberclone.riderapp.Model;
+package com.iramml.uberclone.riderapp.Model.fcm;
 
 import java.util.List;
 
