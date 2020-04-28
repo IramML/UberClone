@@ -1,31 +1,28 @@
 package com.iramml.uberclone.driverapp.Activities;
 
 import android.Manifest;
-import android.animation.ValueAnimator;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.SwitchCompat;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.SwitchCompat;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.support.design.widget.NavigationView;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import com.google.android.material.navigation.NavigationView;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.animation.Interpolator;
 import android.view.animation.LinearInterpolator;
@@ -57,14 +54,11 @@ import com.google.android.gms.location.places.AutocompleteFilter;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.CameraPosition;
-import com.google.android.gms.maps.model.JointType;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
@@ -72,7 +66,6 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.android.gms.maps.model.SquareCap;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -89,10 +82,8 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.google.gson.Gson;
 import com.google.maps.android.SphericalUtil;
 import com.iramml.uberclone.driverapp.Common.Common;
-import com.iramml.uberclone.driverapp.GoogleAPIRoutesRequest.GoogleMapsAPIRequest;
 import com.iramml.uberclone.driverapp.Interfaces.googleAPIInterface;
 import com.iramml.uberclone.driverapp.Interfaces.locationListener;
 import com.iramml.uberclone.driverapp.Messages.Errors;
@@ -119,58 +110,33 @@ import java.util.UUID;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import dmax.dialog.SpotsDialog;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class DriverHome extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
-    Toolbar toolbar;
-    Location location=null;
+    private Toolbar toolbar;
+    private SwitchCompat locationSwitch;
+    private Marker currentLocationMarket;
+    private SupportMapFragment mapFragment;
+
     private GoogleMap mMap;
-    Marker currentLocationMarket;
-    GoogleSignInAccount account;
 
-    DatabaseReference drivers;
-    GeoFire geoFire;
 
+    private FirebaseStorage firebaseStorage;
+    private StorageReference storageReference;
+    private DatabaseReference drivers, onlineRef, currentUserRef;
+    private GeoFire geoFire;
+
+    private GoogleSignInAccount account;
     private GoogleApiClient mGoogleApiClient;
 
-    private static final int REQUEST_CODE_PERMISSION=100;
-    private static final int PLAY_SERVICES_REQUEST_CODE=2001;
-
-    SupportMapFragment mapFragment;
-
-    SwitchCompat locationSwitch=null;
-
-    private PlaceAutocompleteFragment places;
-    AutocompleteFilter typeFilter;
-
-    private List<LatLng> polyLineList;
-    private Marker carMarker;
-    private float v;
-    private double lat, lng;
-    private Handler handler;
-    private LatLng startPosition, endPosition, currentPosition;
-    private int index, next;
-    private String destination;
-    private PolylineOptions polylineOptions, blanckPolylineOptions;
-    private Polyline blackPolyline, greyPolyline;
-
-    private googleAPIInterface mService;
-
-    DatabaseReference onlineRef, currentUserRef;
-
-    FirebaseStorage firebaseStorage;
-    StorageReference storageReference;
+    private Location location;
 
     //Facebook
     AccessToken accessToken = AccessToken.getCurrentAccessToken();
     boolean isLoggedInFacebook = accessToken != null && !accessToken.isExpired();
 
-
-
-
+    private static final int REQUEST_CODE_PERMISSION=100;
+    private static final int PLAY_SERVICES_REQUEST_CODE=2001;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -214,35 +180,12 @@ public class DriverHome extends AppCompatActivity
                 }
             }
         });
-        places=(PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.placeAutocompleteFragment);
-        places.setOnPlaceSelectedListener(new PlaceSelectionListener() {
-            @Override
-            public void onPlaceSelected(Place place) {
-                if (locationSwitch.isChecked()){
-                    destination=place.getAddress().toString();
-                    destination=destination.replace(" ", "+");
-                }else{
-                    Message.messageError(getApplicationContext(), Errors.WITHOUT_LOCATION);
-                }
-            }
-
-            @Override
-            public void onError(Status status) {
-                Toast.makeText(getApplicationContext(), status.toString(), Toast.LENGTH_SHORT).show();
-            }
-        });
-        typeFilter=new AutocompleteFilter.Builder()
-                .setTypeFilter(AutocompleteFilter.TYPE_FILTER_ADDRESS)
-                .setTypeFilter(3)
-                .build();
-        polyLineList=new ArrayList<>();
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
         setUpLocation();
-        mService= Common.getGoogleAPI();
         updateFirebaseToken();
     }
 
@@ -432,17 +375,6 @@ public class DriverHome extends AppCompatActivity
     private void displayLocation(){
         if (Common.currentLat!=null && Common.currentLng!=null){
             if (locationSwitch.isChecked()) {
-                LatLng center=new LatLng(Common.currentLat, Common.currentLng);
-                LatLng northSide=SphericalUtil.computeOffset(center, 100000, 0);
-                LatLng southSide=SphericalUtil.computeOffset(center, 100000, 180);
-
-                LatLngBounds bounds=LatLngBounds.builder()
-                        .include(northSide)
-                        .include(southSide)
-                        .build();
-                places.setBoundsBias(bounds);
-                places.setFilter(typeFilter);
-
                 geoFire.setLocation(Common.userID,
                         new GeoLocation(Common.currentLat, Common.currentLng),
                         new GeoFire.CompletionListener() {
@@ -619,7 +551,7 @@ public class DriverHome extends AppCompatActivity
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 dialogInterface.dismiss();
-                final android.app.AlertDialog waitingDialog = new SpotsDialog(DriverHome.this);
+                final android.app.AlertDialog waitingDialog = new SpotsDialog.Builder().setContext(DriverHome.this).build();
                 waitingDialog.show();
                 Map<String, Object> updateInfo=new HashMap<>();
                 if(rbUberX.isChecked())
@@ -683,7 +615,7 @@ public class DriverHome extends AppCompatActivity
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 dialogInterface.dismiss();
-                final android.app.AlertDialog waitingDialog = new SpotsDialog(DriverHome.this);
+                final android.app.AlertDialog waitingDialog = new SpotsDialog.Builder().setContext(DriverHome.this).build();
                 waitingDialog.show();
                 String name = etName.getText().toString();
                 String phone = etPhone.getText().toString();
@@ -719,7 +651,7 @@ public class DriverHome extends AppCompatActivity
     }
 
     private void chooseImage() {
-        Dexter.withActivity(this)
+        Dexter.withContext(this)
                 .withPermissions(Manifest.permission.READ_EXTERNAL_STORAGE,
                         Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 .withListener(new MultiplePermissionsListener() {
@@ -811,7 +743,7 @@ public class DriverHome extends AppCompatActivity
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
 
-                final android.app.AlertDialog waitingDialog = new SpotsDialog(DriverHome.this);
+                final android.app.AlertDialog waitingDialog = new SpotsDialog.Builder().setContext(DriverHome.this).build();
                 waitingDialog.show();
 
                 if (edtNewPassword.getText().toString().equals(edtRepeatPassword.getText().toString())) {

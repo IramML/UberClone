@@ -9,12 +9,18 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.v4.app.NotificationCompat;
+
+import androidx.annotation.NonNull;
+import androidx.core.app.NotificationCompat;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.iramml.uberclone.riderapp.Activities.Home;
 import com.iramml.uberclone.riderapp.Activities.RateActivity;
 import com.iramml.uberclone.riderapp.Common.Common;
+import com.iramml.uberclone.riderapp.Model.firebase.Token;
 import com.iramml.uberclone.riderapp.R;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
@@ -57,6 +63,17 @@ public class firebaseMessagning extends FirebaseMessagingService {
         }else if(remoteMessage.getNotification().getTitle().equals("DropOff")){
             openRateActivity(remoteMessage.getNotification().getBody());
         }
+    }
+
+    @Override
+    public void onNewToken(@NonNull String s) {
+        super.onNewToken(s);
+        FirebaseDatabase db=FirebaseDatabase.getInstance();
+        DatabaseReference tokens=db.getReference(Common.token_tbl);
+
+        Token token=new Token(s);
+        if (FirebaseAuth.getInstance().getCurrentUser()!=null)tokens.child(FirebaseAuth.getInstance().getUid())
+                .setValue(token);
     }
 
     private void openRateActivity(String body) {

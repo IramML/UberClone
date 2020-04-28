@@ -1,7 +1,7 @@
 package com.iramml.uberclone.riderapp.Common;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.util.Log;
 
 import com.iramml.uberclone.riderapp.Interfaces.IFCMService;

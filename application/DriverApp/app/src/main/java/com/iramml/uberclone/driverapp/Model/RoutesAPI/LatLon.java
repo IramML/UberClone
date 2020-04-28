@@ -1,4 +1,4 @@
-package com.iramml.uberclone.driverapp.GoogleAPIRoutesRequest;
+package com.iramml.uberclone.driverapp.Model.RoutesAPI;
 
 import com.google.android.gms.maps.model.LatLng;
 

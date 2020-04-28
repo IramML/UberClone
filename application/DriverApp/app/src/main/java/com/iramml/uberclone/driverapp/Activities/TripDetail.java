@@ -1,6 +1,6 @@
 package com.iramml.uberclone.driverapp.Activities;
 
-import android.support.v4.app.FragmentActivity;
+import androidx.fragment.app.FragmentActivity;
 import android.os.Bundle;
 import android.widget.TextView;
 

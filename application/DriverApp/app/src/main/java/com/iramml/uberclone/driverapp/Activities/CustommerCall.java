@@ -2,7 +2,7 @@ package com.iramml.uberclone.driverapp.Activities;
 
 import android.content.Intent;
 import android.media.MediaPlayer;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -12,7 +12,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.google.gson.Gson;
 import com.iramml.uberclone.driverapp.Common.Common;
-import com.iramml.uberclone.driverapp.GoogleAPIRoutesRequest.GoogleMapsAPIRequest;
+import com.iramml.uberclone.driverapp.Model.RoutesAPI.GoogleMapsAPIRequest;
 import com.iramml.uberclone.driverapp.Interfaces.IFCMService;
 import com.iramml.uberclone.driverapp.Interfaces.googleAPIInterface;
 import com.iramml.uberclone.driverapp.Messages.Message;

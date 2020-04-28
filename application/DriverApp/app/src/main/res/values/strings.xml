@@ -6,6 +6,7 @@
     <string name="tv_login_subtitle">UBER CLONE</string>
     <string name="login">LOG IN</string>
     <string name="signin">SIGN IN</string>
+    <string name="sign_up">SIGN UP</string>
     <string name="btn_accept">ACCEPT</string>
     <string name="btn_decline">DECLINE</string>
     <string name="tv_find_users">Find users</string>

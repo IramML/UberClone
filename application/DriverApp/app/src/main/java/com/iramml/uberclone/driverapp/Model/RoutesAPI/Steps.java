@@ -1,4 +1,4 @@
-package com.iramml.uberclone.driverapp.GoogleAPIRoutesRequest;
+package com.iramml.uberclone.driverapp.Model.RoutesAPI;
 
 public class Steps{
     public LatLon start_location;
