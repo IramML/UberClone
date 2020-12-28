@@ -1,5 +1,6 @@
 package com.iramml.uberclone.driverapp.interfaces;
 
+import com.iramml.uberclone.driverapp.common.ConfigApp;
 import com.iramml.uberclone.driverapp.model.FCMResponse;
 import com.iramml.uberclone.driverapp.model.Sender;
 
@@ -11,7 +12,7 @@ import retrofit2.http.POST;
 public interface IFCMService {
     @Headers({
         "Content-Type:application/json",
-        "Authorization:key=AAAA4zxaLrc:APA91bH_nRR08YI7Xi8rFMlzAWTR9d5FBmEJR4h-RZ8a_yo2EbmRFqEAlcRID6DjpVy4zIWSwhhVmvsD-jVPZrkuaoifMldgxmSZ5OKzBzSMcIRI0iyD74DSwo36vEsHiwTCXg2i4GUa3YcUYK0137uaTfzIPzjzHw"
+        "Authorization:key=" + ConfigApp.CLOUD_MESSAGING_SERVER_GEY
     })
     @POST("fcm/send")
     Call<FCMResponse> sendMessage(@Body Sender body);

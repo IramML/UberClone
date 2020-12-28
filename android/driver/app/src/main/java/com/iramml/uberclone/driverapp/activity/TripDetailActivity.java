@@ -1,6 +1,8 @@
 package com.iramml.uberclone.driverapp.activity;
 
 import androidx.fragment.app.FragmentActivity;
+
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.widget.TextView;
 
@@ -14,6 +16,7 @@ import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.iramml.uberclone.driverapp.common.Common;
 import com.iramml.uberclone.driverapp.R;
+import com.iramml.uberclone.driverapp.common.ConfigApp;
 
 import java.util.Calendar;
 
@@ -51,14 +54,15 @@ public class TripDetailActivity extends FragmentActivity implements OnMapReadyCa
         settingInformation();
     }
 
+    @SuppressLint("DefaultLocale")
     private void settingInformation() {
-        if(getIntent()!=null) {
+        if(getIntent() != null) {
             Calendar calendar = Calendar.getInstance();
             String date = String.format("%s, %d/%d", convertToDayOfWeek(calendar.get(Calendar.DAY_OF_WEEK)), calendar.get(Calendar.DAY_OF_MONTH), calendar.get(Calendar.MONTH));
             txtDate.setText(date);
             txtFee.setText(String.format("$ %.2f", getIntent().getDoubleExtra("total", 0.0)));
             txtEstimatedPayout.setText(String.format("$ %.2f", getIntent().getDoubleExtra("total", 0.0)));
-            txtBaseFare.setText(String.format("$ %.2f", Common.baseFare));
+            txtBaseFare.setText(String.format("$ %.2f", ConfigApp.baseFare));
             txtTime.setText(String.format("%s min", getIntent().getStringExtra("time")));
             txtDistance.setText(String.format("%s km", getIntent().getStringExtra("distance")));
             txtFrom.setText(getIntent().getStringExtra("start_address"));

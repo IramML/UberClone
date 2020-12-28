@@ -34,13 +34,13 @@ public class CallDriverActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_call_driver);
-        mService=Common.getFCMService();
+        mService = Common.getFCMService();
 
-        imgAvatar=(CircleImageView)findViewById(R.id.imgAvatar);
-        tvName=findViewById(R.id.tvDriverName);
-        tvPhone=findViewById(R.id.tvPhone);
-        tvRate=findViewById(R.id.tvRate);
-        btnCallDriver=findViewById(R.id.btnCallDriver);
+        imgAvatar = (CircleImageView)findViewById(R.id.imgAvatar);
+        tvName = findViewById(R.id.tvDriverName);
+        tvPhone = findViewById(R.id.tvPhone);
+        tvRate = findViewById(R.id.tvRate);
+        btnCallDriver = findViewById(R.id.btnCallDriver);
 
         if(getIntent()!=null){
             driverID=getIntent().getStringExtra("driverID");

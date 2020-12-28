@@ -125,8 +125,9 @@ public class DriverHomeActivity extends AppCompatActivity
     AccessToken accessToken = AccessToken.getCurrentAccessToken();
     boolean isLoggedInFacebook = accessToken != null && !accessToken.isExpired();
 
-    private static final int REQUEST_CODE_PERMISSION=100;
-    private static final int PLAY_SERVICES_REQUEST_CODE=2001;
+    private final int REQUEST_CODE_PERMISSION=100;
+    private final int PLAY_SERVICES_REQUEST_CODE=2001;
+    public final int PICK_IMAGE_REQUEST = 9999;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -650,7 +651,7 @@ public class DriverHomeActivity extends AppCompatActivity
                         if(report.areAllPermissionsGranted()){
                             Intent intent=new Intent(Intent.ACTION_PICK);
                             intent.setType("image/*");
-                            startActivityForResult(intent, Common.PICK_IMAGE_REQUEST);
+                            startActivityForResult(intent, PICK_IMAGE_REQUEST);
                         }else{
                             Toast.makeText(getApplicationContext(), "Permission denied", Toast.LENGTH_SHORT).show();
                         }
@@ -666,9 +667,9 @@ public class DriverHomeActivity extends AppCompatActivity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode==Common.PICK_IMAGE_REQUEST && resultCode==RESULT_OK && data!=null && data.getData()!=null){
+        if(requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null){
             Uri saveUri=data.getData();
-            if(saveUri!=null){
+            if(saveUri != null){
                 final ProgressDialog progressDialog=new ProgressDialog(this);
                 progressDialog.setMessage("Uploading...");
                 progressDialog.show();

@@ -16,11 +16,11 @@ import com.iramml.uberclone.riderapp.R;
 
 import java.util.ArrayList;
 
-public class PlacesAdapter extends RecyclerView.Adapter<PlacesAdapter.ViewHolder>{
+public class PlacesAdapter extends RecyclerView.Adapter<PlacesViewHolder>{
     Context context;
     ArrayList<Results> items;
     ClickListener listener;
-    ViewHolder viewHolder;
+    PlacesViewHolder viewHolder;
     DatabaseReference favLocations;
     FirebaseDatabase database;
 
@@ -30,16 +30,17 @@ public class PlacesAdapter extends RecyclerView.Adapter<PlacesAdapter.ViewHolder
         this.listener=listener;
         database= FirebaseDatabase.getInstance();
     }
+
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
+    public PlacesViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         View view= LayoutInflater.from(context).inflate(R.layout.template_place_item,viewGroup,false);
-        viewHolder=new ViewHolder(view, listener);
+        viewHolder=new PlacesViewHolder(view, listener);
         return viewHolder;
     }
 
     @Override
-    public void onBindViewHolder(@NonNull final ViewHolder viewHolder, final int i) {
+    public void onBindViewHolder(@NonNull final PlacesViewHolder viewHolder, final int i) {
         viewHolder.tvPlaceName.setText(items.get(i).formatted_address);
     }
     @Override
@@ -47,19 +48,4 @@ public class PlacesAdapter extends RecyclerView.Adapter<PlacesAdapter.ViewHolder
         return items.size();
     }
 
-    class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
-        TextView tvPlaceName;
-        ClickListener listener;
-        public ViewHolder(View itemView, ClickListener listener) {
-            super(itemView);
-            tvPlaceName=itemView.findViewById(R.id.tvPlaceName);
-            this.listener=listener;
-            itemView.setOnClickListener(this);
-        }
-
-        @Override
-        public void onClick(View view) {
-            this.listener.onClick(view, getAdapterPosition());
-        }
-    }
 }

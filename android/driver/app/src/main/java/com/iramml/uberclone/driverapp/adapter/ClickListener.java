@@ -1,4 +1,4 @@
-package com.iramml.uberclone.riderapp.adapter.RecyclerViewPlaces;
+package com.iramml.uberclone.driverapp.adapter;
 
 import android.view.View;
 

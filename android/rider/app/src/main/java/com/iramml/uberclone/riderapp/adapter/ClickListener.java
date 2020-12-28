@@ -1,4 +1,4 @@
-package com.iramml.uberclone.driverapp.adapter.recyclerviewhistory;
+package com.iramml.uberclone.riderapp.adapter;
 
 import android.view.View;
 

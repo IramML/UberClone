@@ -20,8 +20,8 @@ import com.google.firebase.database.ValueEventListener;
 import com.iramml.uberclone.driverapp.common.Common;
 import com.iramml.uberclone.driverapp.model.History;
 import com.iramml.uberclone.driverapp.R;
-import com.iramml.uberclone.driverapp.adapter.recyclerviewhistory.ClickListener;
-import com.iramml.uberclone.driverapp.adapter.recyclerviewhistory.historyAdapter;
+import com.iramml.uberclone.driverapp.adapter.ClickListener;
+import com.iramml.uberclone.driverapp.adapter.recyclerviewhistory.HistoryAdapter;
 
 import java.util.ArrayList;
 
@@ -30,7 +30,7 @@ public class TripHistoryActivity extends AppCompatActivity {
     DatabaseReference riderHistory;
     RecyclerView.LayoutManager layoutManager;
     RecyclerView rvHistory;
-    historyAdapter adapter;
+    HistoryAdapter adapter;
     FirebaseAuth mAuth;
     ArrayList<History> listData;
     @Override
@@ -44,7 +44,7 @@ public class TripHistoryActivity extends AppCompatActivity {
         database = FirebaseDatabase.getInstance();
         riderHistory = database.getReference(Common.history_driver);
         listData = new ArrayList<>();
-        adapter = new historyAdapter(this, listData, new ClickListener() {
+        adapter = new HistoryAdapter(this, listData, new ClickListener() {
             @Override
             public void onClick(View view, int index) {
 

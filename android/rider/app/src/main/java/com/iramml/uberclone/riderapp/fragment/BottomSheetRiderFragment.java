@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import com.iramml.uberclone.riderapp.common.Common;
 import com.iramml.uberclone.riderapp.R;
+import com.iramml.uberclone.riderapp.common.ConfigApp;
 import com.iramml.uberclone.riderapp.retrofit.IGoogleAPI;
 
 import org.json.JSONArray;
@@ -27,6 +28,7 @@ public class BottomSheetRiderFragment extends BottomSheetDialogFragment {
     boolean isTapOnMap;
     IGoogleAPI mService;
     TextView txtCalculate, txtLocation, txtDestination;
+
     public static BottomSheetRiderFragment newInstance(String location, String destination, boolean isTapOnMap){
         BottomSheetRiderFragment fragment=new BottomSheetRiderFragment();
         Bundle args=new Bundle();
@@ -71,7 +73,7 @@ public class BottomSheetRiderFragment extends BottomSheetDialogFragment {
                     "transit_routing_preference=less_driving&" +
                     "origin=" + mLocation + "&" +
                     "destination=" + mDestination + "&" +
-                    "key=" + getResources().getString(R.string.google_direction_api);
+                    "key=" + ConfigApp.GOOGLE_API_KEY;
             Log.d("LINK_ROUTES", requestUrl);
             mService.getPath(requestUrl).enqueue(new Callback<String>() {
                 @Override

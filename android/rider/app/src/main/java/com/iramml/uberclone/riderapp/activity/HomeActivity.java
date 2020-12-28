@@ -33,6 +33,7 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.iramml.uberclone.riderapp.common.Common;
+import com.iramml.uberclone.riderapp.common.ConfigApp;
 import com.iramml.uberclone.riderapp.fragment.BottomSheetRiderFragment;
 import com.iramml.uberclone.riderapp.helper.CustomInfoWindow;
 import com.iramml.uberclone.riderapp.interfaces.HttpResponse;
@@ -88,7 +89,6 @@ import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.iramml.uberclone.riderapp.util.NetworkUtil;
-import com.iramml.uberclone.riderapp.adapter.RecyclerViewPlaces.ClickListener;
 import com.iramml.uberclone.riderapp.adapter.RecyclerViewPlaces.PlacesAdapter;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
@@ -147,6 +147,8 @@ public class HomeActivity extends AppCompatActivity
     private int radius=1, distance=1; // km
     private static final int LIMIT=3;
     private String URL_BASE_API_PLACES="https://maps.googleapis.com/maps/api/place/textsearch/json?";
+
+    public static boolean driverFound=false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -221,7 +223,7 @@ public class HomeActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 if (currentLat!=null && currentLng!=null) {
-                    if (!Common.driverFound)
+                    if (!driverFound)
                         requestPickup(Common.userID);
                     else
                         Common.sendRequestToDriver(Common.driverID, ifcmService, getApplicationContext(), Common.currenLocation);
@@ -422,9 +424,9 @@ public class HomeActivity extends AppCompatActivity
         geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
             @Override
             public void onKeyEntered(String key, GeoLocation location) {
-                if (!Common.driverFound){
-                    Common.driverFound=true;
-                    Common.driverID=key;
+                if (!driverFound){
+                    driverFound = true;
+                    Common.driverID = key;
                     btnRequestPickup.setText(getApplicationContext().getResources().getString(R.string.call_driver));
                 }
             }
@@ -441,11 +443,11 @@ public class HomeActivity extends AppCompatActivity
 
             @Override
             public void onGeoQueryReady() {
-                if (!Common.driverFound && radius<LIMIT){
+                if (!driverFound && radius<LIMIT){
                     radius++;
                     findDriver();
                 }else{
-                    if(!Common.driverFound) {
+                    if(!driverFound) {
                         Toast.makeText(HomeActivity.this, "No available any driver near you", Toast.LENGTH_SHORT).show();
                         btnRequestPickup.setText("REQUEST PICKUP");
                     }
@@ -862,11 +864,11 @@ public class HomeActivity extends AppCompatActivity
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
-        String query="&query="+queryEncode;
-        String location="&location="+ Common.currenLocation.latitude +","+Common.currenLocation.longitude;
-        String radius="radius=1500";
-        String key="&key="+ getResources().getString(R.string.google_direction_api);
-        String url=(URL_BASE_API_PLACES+radius+location+query+key).replaceAll(" ", "%20");
+        String query = "&query=" + queryEncode;
+        String location = "&location=" + Common.currenLocation.latitude + "," + Common.currenLocation.longitude;
+        String radius = "radius=1500";
+        String key = "&key=" + ConfigApp.GOOGLE_API_KEY;
+        String url = (URL_BASE_API_PLACES + radius + location + query + key).replaceAll(" ", "%20");
 
         Log.d("URL_PLACES", url);
         networkUtil.httpRequest(url, new HttpResponse() {
