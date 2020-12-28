@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#0b1c21"
-    tools:context=".Activities.CustommerCall">
+    tools:context=".activity.CustomerCallActivity">
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/imgMap"

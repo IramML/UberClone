@@ -8,7 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.iramml.uberclone.riderapp.Model.firebase.History;
+import com.iramml.uberclone.riderapp.model.firebase.History;
 import com.iramml.uberclone.riderapp.R;
 
 import java.util.ArrayList;

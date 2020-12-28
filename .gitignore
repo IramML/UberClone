@@ -4,3 +4,6 @@ android/*.apk
 android/*.aar
 android/*.ap_
 android/*.aab
+
+android/rider/app/google-services.json
+android/driver/app/google-services.json

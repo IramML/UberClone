@@ -20,13 +20,13 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name="com.iramml.uberclone.riderapp.Activities.TripHistory" android:parentActivityName="com.iramml.uberclone.riderapp.Activities.Home"></activity>
+        <activity android:name="com.iramml.uberclone.riderapp.activity.TripHistoryActivity" android:parentActivityName="com.iramml.uberclone.riderapp.activity.HomeActivity"></activity>
 
         <uses-library
             android:name="org.apache.http.legacy"
             android:required="false" />
 
-        <activity android:name="com.iramml.uberclone.riderapp.Activities.Login">
+        <activity android:name="com.iramml.uberclone.riderapp.activity.LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -46,23 +46,23 @@
             android:value="@string/google_maps_key" />
 
         <activity
-            android:name="com.iramml.uberclone.riderapp.Activities.Home"
+            android:name="com.iramml.uberclone.riderapp.activity.HomeActivity"
             android:label="@string/title_activity_home"
             android:theme="@style/AppTheme" />
 
-        <service android:name="com.iramml.uberclone.riderapp.Service.FirebaseIdService">
+        <service android:name="com.iramml.uberclone.riderapp.service.FirebaseIdService">
             <intent-filter>
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
             </intent-filter>
         </service>
-        <service android:name="com.iramml.uberclone.riderapp.Service.firebaseMessagning">
+        <service android:name="com.iramml.uberclone.riderapp.service.firebaseMessagning">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
 
-        <activity android:name="com.iramml.uberclone.riderapp.Activities.RateActivity" />
-        <activity android:name="com.iramml.uberclone.riderapp.Activities.CallDriver" />
+        <activity android:name="com.iramml.uberclone.riderapp.activity.RateActivity" />
+        <activity android:name="com.iramml.uberclone.riderapp.activity.CallDriverActivity" />
 
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"

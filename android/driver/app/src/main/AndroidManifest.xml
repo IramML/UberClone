@@ -16,13 +16,13 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name="com.iramml.uberclone.driverapp.Activities.TripHistory"></activity>
+        <activity android:name="com.iramml.uberclone.driverapp.activity.TripHistoryActivity"></activity>
 
         <uses-library
             android:name="org.apache.http.legacy"
             android:required="false" />
 
-        <activity android:name="com.iramml.uberclone.driverapp.Activities.Login">
+        <activity android:name="com.iramml.uberclone.driverapp.activity.LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -41,27 +41,27 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
-        <activity android:name="com.iramml.uberclone.driverapp.Activities.CustommerCall" />
+        <activity android:name="com.iramml.uberclone.driverapp.activity.CustomerCallActivity" />
 
-        <service android:name="com.iramml.uberclone.driverapp.Service.FirebaseIdService">
+        <service android:name="com.iramml.uberclone.driverapp.service.FirebaseIdService">
             <intent-filter>
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
             </intent-filter>
         </service>
-        <service android:name="com.iramml.uberclone.driverapp.Service.firebaseMessaging">
+        <service android:name="com.iramml.uberclone.driverapp.service.firebaseMessaging">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
 
         <activity
-            android:name="com.iramml.uberclone.driverapp.Activities.DriverTracking"
+            android:name="com.iramml.uberclone.driverapp.activity.DriverTrackingActivity"
             android:label="@string/title_activity_driver_tracking" />
         <activity
-            android:name="com.iramml.uberclone.driverapp.Activities.TripDetail"
+            android:name="com.iramml.uberclone.driverapp.activity.TripDetailActivity"
             android:label="@string/title_activity_trip_detail" />
         <activity
-            android:name="com.iramml.uberclone.driverapp.Activities.DriverHome"
+            android:name="com.iramml.uberclone.driverapp.activity.DriverHomeActivity"
             android:label="@string/title_activity_drawer_home"
             android:theme="@style/AppTheme" />
 

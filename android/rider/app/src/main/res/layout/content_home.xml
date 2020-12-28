@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context=".Activities.Home"
+    tools:context=".activity.HomeActivity"
     tools:showIn="@layout/app_bar_home">
 
     <RelativeLayout
@@ -23,7 +23,7 @@
             android:name="com.google.android.gms.maps.SupportMapFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            tools:context=".Activities.Home" />
+            tools:context=".activity.HomeActivity" />
 
         <RelativeLayout
             android:layout_width="match_parent"

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Activities.Login"
+    tools:context=".activity.LoginActivity"
     android:id="@+id/root"
     android:background="@mipmap/bg_login">
 
