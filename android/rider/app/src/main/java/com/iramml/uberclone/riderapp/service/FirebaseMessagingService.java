@@ -22,10 +22,9 @@ import com.iramml.uberclone.riderapp.activity.RateActivity;
 import com.iramml.uberclone.riderapp.common.Common;
 import com.iramml.uberclone.riderapp.model.firebase.Token;
 import com.iramml.uberclone.riderapp.R;
-import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
-public class firebaseMessagning extends FirebaseMessagingService {
+public class FirebaseMessagingService extends com.google.firebase.messaging.FirebaseMessagingService {
     @Override
     public void onMessageReceived(final RemoteMessage remoteMessage) {
         if(remoteMessage.getNotification().getTitle().equals("Cancel")){
@@ -33,7 +32,7 @@ public class firebaseMessagning extends FirebaseMessagingService {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    Toast.makeText(firebaseMessagning.this,""+remoteMessage.getNotification().getBody(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(FirebaseMessagingService.this,""+remoteMessage.getNotification().getBody(), Toast.LENGTH_SHORT).show();
                 }
             });
         }else if(remoteMessage.getNotification().getTitle().equals("Accept")){

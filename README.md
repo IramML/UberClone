@@ -1,24 +1,22 @@
 # UberClone
 
-Refactoring code...
+**Refactoring code...**
 
 ## Setup Guide
 
 ### Setup firebase
-- Open your [Firebase console](https://console.firebase.google.com/)
-- Add a new project
+- Add a new project your [Firebase console](https://console.firebase.google.com/)
 - Add a new Android application, you have to do add 2 applicatitons, driver and rider one.
-- Then go to the project settings > Cloud Messaging. On this tab you will copy the Server Key and you will put it in [IFCMService.java](applications/DriverApp/app/src/main/java/com/iramml/uberclone/driverapp/Interfaces/IFCMService.java) file you will put the Server Key on the line 14, after Authorization:key=
-- Do also the last step to the RiderApp
+- Then go to the project settings > Cloud Messaging. On this tab you will copy the Server Key. You will put that key in common/ConfigApp.java file on CLOUD_MESSAGING_SERVER_GEY constant on rider and driver apps
 
 ### Setup Google APIs
 - Go to your [Google cloud platform](https://console.cloud.google.com/) and select your project or create a new project.
-- Search and active:
+- Search and active this API keys:
     - Places SDK for Android
     - Maps SDK for Android
     - Directions API
-- Go to your Credentials and copy the API Key
-- You will replace the API key on the String.xml of the both applications
+- Go to your Credentials, create an API Key 
+- You will put that API key in common/ConfigApp.java file on GOOGLE_API_KEY constant on driver and rider apps
 
 ## Screenshots
 |Driver Application|Rider Application|

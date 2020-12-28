@@ -81,4 +81,8 @@
     <string name="tv_login_title">RIDER</string>
 
     <string name="you">You</string>
+
+    <string name="menu_home">Home</string>
+    <string name="menu_gallery">Gallery</string>
+    <string name="menu_slideshow">Slideshow</string>
 </resources>
