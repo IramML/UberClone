@@ -1,0 +1,6 @@
+*.DS_Store
+
+android/*.apk
+android/*.aar
+android/*.ap_
+android/*.aab
