@@ -5,8 +5,11 @@
 
     <group android:checkableBehavior="single">
         <item
-            android:id="@+id/nav_trip_history"
-            android:title="TRIP HISTORY" />
+            android:id="@+id/nav_home"
+            android:title="@string/nav_home" />
+        <item
+            android:id="@+id/nav_history"
+            android:title="@string/nav_history" />
         <item
             android:id="@+id/nav_car_type"
             android:title="UPDATE VEHICLE TYPE" />

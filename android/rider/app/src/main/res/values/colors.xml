@@ -2,7 +2,7 @@
 <resources>
     <color name="colorPrimary">#1565c0</color>
     <color name="colorPrimaryDark">#003c8f</color>
-    <color name="colorAccent">#ffeb3b</color>
+    <color name="colorAccent">#5e92f3</color>
 
     <color name="rippleEfectColor">#000</color>
     <color name="btnSignIn">#4a86ff</color>

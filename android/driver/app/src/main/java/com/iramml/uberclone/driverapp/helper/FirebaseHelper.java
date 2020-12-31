@@ -25,7 +25,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.iramml.uberclone.driverapp.activity.DriverHomeActivity;
+import com.iramml.uberclone.driverapp.activity.HomeActivity;
 import com.iramml.uberclone.driverapp.common.Common;
 import com.iramml.uberclone.driverapp.model.User;
 import com.iramml.uberclone.driverapp.R;
@@ -279,7 +279,7 @@ public class FirebaseHelper {
         goToMainActivity();
     }
     private void goToMainActivity(){
-        activity.startActivity(new Intent(activity, DriverHomeActivity.class));
+        activity.startActivity(new Intent(activity, HomeActivity.class));
         activity.finish();
     }
     public void registerByGoogleAccount(final GoogleSignInAccount account){

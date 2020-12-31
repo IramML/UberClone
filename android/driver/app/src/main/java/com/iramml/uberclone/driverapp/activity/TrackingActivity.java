@@ -71,7 +71,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class DriverTrackingActivity extends AppCompatActivity implements OnMapReadyCallback , GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener{
+public class TrackingActivity extends AppCompatActivity implements OnMapReadyCallback , GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener{
 
     private GoogleMap mMap;
     Location location=null;
@@ -223,7 +223,7 @@ public class DriverTrackingActivity extends AppCompatActivity implements OnMapRe
                                 riderHistory.setTripDate(date);
                                 historyRider.push().setValue(riderHistory);
 
-                                Intent intent = new Intent(DriverTrackingActivity.this, TripDetailActivity.class);
+                                Intent intent = new Intent(TrackingActivity.this, TripDetailActivity.class);
                                 intent.putExtra("start_address", legsObject.getString("start_address"));
                                 intent.putExtra("end_address", legsObject.getString("end_address"));
                                 intent.putExtra("time", String.valueOf(timeValue));
@@ -242,7 +242,7 @@ public class DriverTrackingActivity extends AppCompatActivity implements OnMapRe
 
                         @Override
                         public void onFailure(Call<String> call, Throwable t) {
-                            Toast.makeText(DriverTrackingActivity.this, "" + t.getMessage(), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(TrackingActivity.this, "" + t.getMessage(), Toast.LENGTH_SHORT).show();
 
                         }
                     });
@@ -305,7 +305,7 @@ public class DriverTrackingActivity extends AppCompatActivity implements OnMapRe
             @Override
             public void onResponse(Call<FCMResponse> call, Response<FCMResponse> response) {
                 if (response.body().success != 1) {
-                    Toast.makeText(DriverTrackingActivity.this, "Failed", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(TrackingActivity.this, "Failed", Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -326,7 +326,7 @@ public class DriverTrackingActivity extends AppCompatActivity implements OnMapRe
             @Override
             public void onResponse(Call<FCMResponse> call, Response<FCMResponse> response) {
                 if (response.body().success != 1) {
-                    Toast.makeText(DriverTrackingActivity.this, "Failed", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(TrackingActivity.this, "Failed", Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -405,7 +405,7 @@ public class DriverTrackingActivity extends AppCompatActivity implements OnMapRe
 
                         @Override
                         public void onFailure(Call<String> call, Throwable t) {
-                            Toast.makeText(DriverTrackingActivity.this, "" + t.getMessage(), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(TrackingActivity.this, "" + t.getMessage(), Toast.LENGTH_SHORT).show();
 
                         }
                     });
@@ -449,7 +449,7 @@ public class DriverTrackingActivity extends AppCompatActivity implements OnMapRe
     @Override
     protected void onResume() {
         super.onResume();
-        location.inicializeLocation();
+        location.initializeLocation();
     }
 
     @Override
@@ -475,7 +475,7 @@ public class DriverTrackingActivity extends AppCompatActivity implements OnMapRe
 
     private class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String, String>>>> {
 
-        ProgressDialog mDialog = new ProgressDialog(DriverTrackingActivity.this);
+        ProgressDialog mDialog = new ProgressDialog(TrackingActivity.this);
 
         @Override
         protected void onPreExecute() {

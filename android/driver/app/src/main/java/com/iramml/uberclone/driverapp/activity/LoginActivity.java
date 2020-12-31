@@ -107,7 +107,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     protected void onStart() {
         super.onStart();
         if(isLoggedIn){
-            startActivity(new Intent(LoginActivity.this, DriverHomeActivity.class));
+            startActivity(new Intent(LoginActivity.this, HomeActivity.class));
             finish();
         }
         verifyGoogleAccount();

@@ -40,25 +40,33 @@ public class CustomerCallActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_custommer_call);
-        mService=Common.getGoogleAPI();
-        mFCMService=Common.getFCMService();
-        tvTime=findViewById(R.id.tvTime);
-        tvDistance=findViewById(R.id.tvDistance);
-        tvAddress=findViewById(R.id.tvAddress);
-        btnDecline=findViewById(R.id.btnDecline);
-        btnAccept=findViewById(R.id.btnAccept);
+        mService = Common.getGoogleAPI();
+        mFCMService = Common.getFCMService();
+        initViews();
+        initListeners();
+        playCallSound();
 
-        mediaPlayer=MediaPlayer.create(this, R.raw.ringtone);
-        mediaPlayer.setLooping(true);
-        mediaPlayer.start();
 
-        if (getIntent()!=null){
+        if (getIntent() != null){
             lat=getIntent().getDoubleExtra("lat", -1.0);
             lng=getIntent().getDoubleExtra("lng", -1.0);
             riderID=getIntent().getStringExtra("rider");
             token=getIntent().getStringExtra("token");
             getDirection(lat, lng);
-        }else finish();
+        }else
+            finish();
+
+    }
+
+    private void initViews() {
+        tvTime = findViewById(R.id.tvTime);
+        tvDistance = findViewById(R.id.tvDistance);
+        tvAddress = findViewById(R.id.tvAddress);
+        btnDecline = findViewById(R.id.btnDecline);
+        btnAccept = findViewById(R.id.btnAccept);
+    }
+
+    private void initListeners() {
         btnDecline.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -68,7 +76,7 @@ public class CustomerCallActivity extends AppCompatActivity {
         btnAccept.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent=new Intent(CustomerCallActivity.this, DriverTrackingActivity.class);
+                Intent intent=new Intent(CustomerCallActivity.this, TrackingActivity.class);
                 intent.putExtra("lat", lat);
                 intent.putExtra("lng", lng);
                 intent.putExtra("riderID", riderID);
@@ -79,11 +87,17 @@ public class CustomerCallActivity extends AppCompatActivity {
         });
     }
 
-    private void cancelRequest(String riderID) {
-        Token token=new Token(riderID);
+    private void playCallSound() {
+        mediaPlayer = MediaPlayer.create(this, R.raw.ringtone);
+        mediaPlayer.setLooping(true);
+        mediaPlayer.start();
+    }
 
-        Notification notification=new Notification("Cancel", "Driver has cancelled your request");
-        Sender sender=new Sender(token.getToken(), notification);
+    private void cancelRequest(String riderID) {
+        Token token = new Token(riderID);
+
+        Notification notification = new Notification("Cancel", "Driver has cancelled your request");
+        Sender sender = new Sender(token.getToken(), notification);
 
         mFCMService.sendMessage(sender).enqueue(new Callback<FCMResponse>() {
             @Override
@@ -101,14 +115,13 @@ public class CustomerCallActivity extends AppCompatActivity {
         });
     }
 
-    private void getDirection(double lat, double lng){
-
+    private void getDirection(double lat, double lng) {
         final String requestApi;
 
         try{
             requestApi="https://maps.googleapis.com/maps/api/directions/json?mode=driving&" +
-                    "transit_routing_preference=less_driving&origin="+ Common.currentLat+","+Common.currentLng+"&" +
-                    "destination="+lat+","+lng+"&key="+getResources().getString(R.string.google_direction_api);
+                    "transit_routing_preference=less_driving&origin=" + Common.currentLat + "," + Common.currentLng+"&" +
+                    "destination=" + lat + "," + lng + "&key=" + getResources().getString(R.string.google_direction_api);
             Log.d("URL_MAPS", requestApi);
             mService.getPath(requestApi).enqueue(new Callback<String>() {
                 @Override

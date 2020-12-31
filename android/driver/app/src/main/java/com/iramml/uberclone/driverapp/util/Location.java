@@ -1,6 +1,7 @@
 package com.iramml.uberclone.driverapp.util;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.pm.PackageManager;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -14,7 +15,7 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 
 public class Location {
-    AppCompatActivity activity;
+    Activity activity;
     private final String permissionFineLocation=android.Manifest.permission.ACCESS_FINE_LOCATION;
     private final String permissionCoarseLocation=android.Manifest.permission.ACCESS_COARSE_LOCATION;
 
@@ -24,12 +25,12 @@ public class Location {
 
     private LocationRequest locationRequest;
     private LocationCallback locationCallback;
-    public Location(AppCompatActivity activity, final locationListener locationListener) {
-        this.activity=activity;
-        fusedLocationClient=new FusedLocationProviderClient(activity.getApplicationContext());
+    public Location(Activity activity, final locationListener locationListener) {
+        this.activity = activity;
+        fusedLocationClient = new FusedLocationProviderClient(activity.getApplicationContext());
 
-        inicializeLocationRequest();
-        locationCallback=new LocationCallback(){
+        initializeLocationRequest();
+        locationCallback = new LocationCallback(){
             @Override
             public void onLocationResult(LocationResult locationResult) {
                 super.onLocationResult(locationResult);
@@ -37,8 +38,8 @@ public class Location {
             }
         };
     }
-    private void inicializeLocationRequest(){
-        locationRequest=new LocationRequest();
+    private void initializeLocationRequest(){
+        locationRequest = new LocationRequest();
         locationRequest.setInterval(10000);
         locationRequest.setFastestInterval(3000);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
@@ -66,7 +67,7 @@ public class Location {
                 break;
         }
     }
-    public void inicializeLocation(){
+    public void initializeLocation(){
         if (validatePermissionsLocation())getLocation();
         else requestPermissions();
     }

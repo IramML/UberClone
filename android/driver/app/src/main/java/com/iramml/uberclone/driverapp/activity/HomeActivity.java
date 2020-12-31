@@ -23,6 +23,12 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.navigation.NavController;
+import androidx.navigation.NavDestination;
+import androidx.navigation.Navigation;
+import androidx.navigation.ui.AppBarConfiguration;
+import androidx.navigation.ui.NavigationUI;
+
 import android.view.MenuItem;
 import android.view.animation.Interpolator;
 import android.view.animation.LinearInterpolator;
@@ -71,6 +77,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
@@ -101,112 +108,53 @@ import java.util.UUID;
 import de.hdodenhof.circleimageview.CircleImageView;
 import dmax.dialog.SpotsDialog;
 
-public class DriverHomeActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
-    private Toolbar toolbar;
-    private SwitchCompat locationSwitch;
-    private Marker currentLocationMarket;
-    private SupportMapFragment mapFragment;
+import static androidx.navigation.ui.NavigationUI.setupActionBarWithNavController;
 
-    private GoogleMap mMap;
+public class HomeActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+    private AppBarConfiguration mAppBarConfiguration;
+    private DrawerLayout drawer;
+    private NavigationView navigationView;
+    private NavController navController;
 
-
-    private FirebaseStorage firebaseStorage;
+    private DatabaseReference onlineRef, currentUserRef;
     private StorageReference storageReference;
-    private DatabaseReference drivers, onlineRef, currentUserRef;
-    private GeoFire geoFire;
+    private FirebaseStorage firebaseStorage;
 
-    private GoogleSignInAccount account;
-    private GoogleApiClient mGoogleApiClient;
+    private HomeViewModel homeViewModel;
 
-    private Location location;
-
-    //Facebook
-    AccessToken accessToken = AccessToken.getCurrentAccessToken();
-    boolean isLoggedInFacebook = accessToken != null && !accessToken.isExpired();
-
-    private final int REQUEST_CODE_PERMISSION=100;
-    private final int PLAY_SERVICES_REQUEST_CODE=2001;
     public final int PICK_IMAGE_REQUEST = 9999;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_drawer_home);
-        verifyGoogleAccount();
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-        firebaseStorage=FirebaseStorage.getInstance();
-        storageReference=firebaseStorage.getReference();
-
-
-
-        location=new Location(this, new locationListener() {
-            @Override
-            public void locationResponse(LocationResult response) {
-                // Add a icon_marker in Sydney and move the camera
-                Common.currentLat=response.getLastLocation().getLatitude();
-                Common.currentLng=response.getLastLocation().getLongitude();
-                displayLocation();
-            }
-        });
-
-        locationSwitch=findViewById(R.id.locationSwitch);
-        locationSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                if (b){
-                    FirebaseDatabase.getInstance().goOnline();
-                    location.inicializeLocation();
-                    drivers= FirebaseDatabase.getInstance().getReference(Common.driver_tbl).child(Common.currentUser.getCarType());
-                    geoFire=new GeoFire(drivers);
-                }else{
-                    FirebaseDatabase.getInstance().goOffline();
-                    location.stopUpdateLocation();
-                    currentLocationMarket.remove();
-                    mMap.clear();
-                    //handler.removeCallbacks(drawPathRunnable);
-                    if (currentLocationMarket!=null)currentLocationMarket.remove();
-                }
-            }
-        });
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
-
-        setUpLocation();
+        Common.userID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        firebaseStorage = FirebaseStorage.getInstance();
+        storageReference = firebaseStorage.getReference();
+        homeViewModel = new HomeViewModel();
+        initDrawer();
         updateFirebaseToken();
+        loadUser();
+
     }
 
     public void initDrawer(){
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.addDrawerListener(toggle);
-        toggle.syncState();
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        drawer = findViewById(R.id.drawer_layout);
+        navigationView = findViewById(R.id.nav_view);
+
+        mAppBarConfiguration = new AppBarConfiguration.Builder(
+                R.id.nav_home, R.id.nav_history, R.id.nav_update_info)
+                .setOpenableLayout(drawer)
+                .build();
+
+
+        navController = Navigation.findNavController(this, R.id.nav_host_fragment);
+        NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
+        NavigationUI.setupWithNavController(navigationView, navController);
         navigationView.setNavigationItemSelectedListener(this);
-        View navigationHeaderView=navigationView.getHeaderView(0);
-        TextView tvName=(TextView)navigationHeaderView.findViewById(R.id.tvDriverName);
-        TextView tvStars=(TextView)navigationHeaderView.findViewById(R.id.tvStars);
-        CircleImageView imageAvatar=(CircleImageView) navigationHeaderView.findViewById(R.id.imageAvatar);
-
-        tvName.setText(Common.currentUser.getName());
-        if(Common.currentUser.getRates()!=null &&
-                !TextUtils.isEmpty(Common.currentUser.getRates()))
-            tvStars.setText(Common.currentUser.getRates());
-
-         if(isLoggedInFacebook)
-            Picasso.get().load("https://graph.facebook.com/" + Common.userID + "/picture?width=500&height=500").into(imageAvatar);
-        else if(account!=null)
-            Picasso.get().load(account.getPhotoUrl()).into(imageAvatar);
-
-        if(Common.currentUser.getAvatarUrl()!=null &&
-                !TextUtils.isEmpty(Common.currentUser.getAvatarUrl()))
-        Picasso.get().load(Common.currentUser.getAvatarUrl()).into(imageAvatar);
     }
 
     private void loadUser(){
@@ -215,11 +163,10 @@ public class DriverHomeActivity extends AppCompatActivity
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        Common.currentUser=dataSnapshot.getValue(User.class);
-                        initDrawer();
-                        loadDriverInformation();
-                        onlineRef=FirebaseDatabase.getInstance().getReference().child(".info/connected");
-                        currentUserRef=FirebaseDatabase.getInstance().getReference(Common.driver_tbl).child(Common.currentUser.getCarType())
+                        Common.currentUser = dataSnapshot.getValue(User.class);
+                        setDriverData();
+                        onlineRef = FirebaseDatabase.getInstance().getReference().child(".info/connected");
+                        currentUserRef = FirebaseDatabase.getInstance().getReference(Common.driver_tbl).child(Common.currentUser.getCarType())
                                 .child(Common.userID);
                         onlineRef.addValueEventListener(new ValueEventListener() {
                             @Override
@@ -241,236 +188,39 @@ public class DriverHomeActivity extends AppCompatActivity
                 });
     }
 
-    private void loadDriverInformation(){
-        FirebaseDatabase.getInstance().getReference(Common.user_driver_tbl)
-                .child(Common.userID)
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        Common.currentUser = dataSnapshot.getValue(User.class);
-                    }
+    private void setDriverData() {
+        View navigationHeaderView = navigationView.getHeaderView(0);
+        TextView tvName = (TextView)navigationHeaderView.findViewById(R.id.tvDriverName);
+        TextView tvStars = (TextView)navigationHeaderView.findViewById(R.id.tvStars);
+        CircleImageView imageAvatar=(CircleImageView) navigationHeaderView.findViewById(R.id.imageAvatar);
 
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
+        tvName.setText(Common.currentUser.getName());
+        if(Common.currentUser.getRates() != null &&
+                !TextUtils.isEmpty(Common.currentUser.getRates()))
+            tvStars.setText(Common.currentUser.getRates());
 
-                    }
-                });
-    }
 
-    private void verifyGoogleAccount() {
-        GoogleSignInOptions gso=new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().build();
-        mGoogleApiClient=new GoogleApiClient.Builder(this)
-                .enableAutoManage(this, this)
-                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
-                .build();
-        OptionalPendingResult<GoogleSignInResult> opr=Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
-        if (opr.isDone()){
-            GoogleSignInResult result= opr.get();
-            handleSignInResult(result);
-        }else {
-            opr.setResultCallback(new ResultCallback<GoogleSignInResult>() {
-                @Override
-                public void onResult(@NonNull GoogleSignInResult googleSignInResult) {
-                    handleSignInResult(googleSignInResult);
-                }
-            });
-        }
+        if(Common.currentUser.getAvatarUrl()!=null &&
+                !TextUtils.isEmpty(Common.currentUser.getAvatarUrl()))
+            Picasso.get().load(Common.currentUser.getAvatarUrl()).into(imageAvatar);
     }
 
     private void updateFirebaseToken() {
-        FirebaseDatabase db=FirebaseDatabase.getInstance();
-        final DatabaseReference tokens=db.getReference(Common.token_tbl);
+        FirebaseDatabase db = FirebaseDatabase.getInstance();
+        final DatabaseReference tokens = db.getReference(Common.token_tbl);
 
-        final Token token=new Token(FirebaseInstanceId.getInstance().getToken());
-        if(FirebaseAuth.getInstance().getUid()!=null) tokens.child(FirebaseAuth.getInstance().getUid()).setValue(token);
-        else if(account!=null) tokens.child(account.getId()).setValue(token);
-        else{
-            GraphRequest request = GraphRequest.newMeRequest(
-                    accessToken,
-                    new GraphRequest.GraphJSONObjectCallback() {
-                        @Override
-                        public void onCompleted(JSONObject object, GraphResponse response) {
-                            String id = object.optString("id");
-                            tokens.child(id).setValue(token);
-                        }
-                    });
-            request.executeAsync();
-        }
-    }
-
-    private void handleSignInResult(GoogleSignInResult result) {
-        if (result.isSuccess()) {
-            account = result.getSignInAccount();
-            Common.userID=account.getId();
-            loadUser();
-        }else if(isLoggedInFacebook){
-            GraphRequest request = GraphRequest.newMeRequest(
-                    accessToken,
-                    new GraphRequest.GraphJSONObjectCallback() {
-                        @Override
-                        public void onCompleted(JSONObject object, GraphResponse response) {
-                            String id=object.optString("id");
-                            Common.userID=id;
-                            loadUser();
-                        }
-                    });
-            request.executeAsync();
-        }else{
-            Common.userID=FirebaseAuth.getInstance().getCurrentUser().getUid();
-            loadUser();
-        }
-    }
-
-    private void setUpLocation() {
-        if(ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION)!= PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)!= PackageManager.PERMISSION_GRANTED){
-            ActivityCompat.requestPermissions(this, new String[]{
-                    android.Manifest.permission.ACCESS_COARSE_LOCATION,
-                    android.Manifest.permission.ACCESS_FINE_LOCATION
-            }, REQUEST_CODE_PERMISSION);
-        }else{
-            if (checkPlayServices()){
-                buildGoogleApiClient();
-                if (locationSwitch.isChecked()){
-                    drivers= FirebaseDatabase.getInstance().getReference(Common.driver_tbl).child(Common.currentUser.getCarType());
-                    geoFire=new GeoFire(drivers);
-                    displayLocation();
-                }
-            }
-        }
-    }
-
-    private void buildGoogleApiClient() {
-        mGoogleApiClient=new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
-                .build();
-        mGoogleApiClient.connect();
-    }
-
-    private boolean checkPlayServices() {
-        int resultCode= GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
-        if (resultCode!=ConnectionResult.SUCCESS){
-            if(GooglePlayServicesUtil.isUserRecoverableError(resultCode))
-                GooglePlayServicesUtil.getErrorDialog(resultCode, this, PLAY_SERVICES_REQUEST_CODE).show();
-            else {
-                ShowMessage.messageError(this, Errors.NOT_SUPPORT);
-                finish();
-            }
-            return false;
-        }
-        return true;
-    }
-
-    private void displayLocation(){
-        if (Common.currentLat!=null && Common.currentLng!=null){
-            if (locationSwitch.isChecked()) {
-                geoFire.setLocation(Common.userID,
-                        new GeoLocation(Common.currentLat, Common.currentLng),
-                        new GeoFire.CompletionListener() {
-                            @Override
-                            public void onComplete(String key, DatabaseError error) {
-                                LatLng currentLocation = new LatLng(Common.currentLat, Common.currentLng);
-                                if (currentLocationMarket != null) currentLocationMarket.remove();
-
-                                currentLocationMarket = mMap.addMarker(new MarkerOptions().position(currentLocation)
-                                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.icon_marker))
-                                        .title("Your Location"));
-                                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(Common.currentLat, Common.currentLng), 15.0f));
-
-                            }
-                        });
-            }
-        }else{
-            ShowMessage.messageError(this, Errors.WITHOUT_LOCATION);
-        }
-
-    }
-
-    private void rotateMarket(Marker marker, final float degrees, GoogleMap mMap){
-        final Handler handler=new Handler();
-        long start= SystemClock.uptimeMillis();
-        final float startRotation=currentLocationMarket.getRotation();
-        final long duration=1500;
-
-        final Interpolator interpolator=new LinearInterpolator();
-        handler.post(new Runnable() {
+        FirebaseMessaging.getInstance().getToken().addOnSuccessListener(new OnSuccessListener<String>() {
             @Override
-            public void run() {
-                long elapsed=SystemClock.uptimeMillis();
-                float t=interpolator.getInterpolation((float)elapsed/duration);
-                float rot=t*degrees+(1-t)*startRotation;
-
-                currentLocationMarket.setRotation(-rot>180?rot/2:rot);
-                if (t<1.0){
-                    handler.postDelayed(this, 16);
-                }
+            public void onSuccess(String token) {
+                tokens
+                    .child(FirebaseAuth.getInstance().getUid())
+                        .setValue(token);
             }
         });
     }
 
     @Override
-    public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
-        mMap.setTrafficEnabled(false);
-        mMap.setIndoorEnabled(false);
-        mMap.setBuildingsEnabled(false);
-        mMap.getUiSettings().setZoomControlsEnabled(true);
-        googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.uber_style_map));
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        switch (requestCode){
-            case REQUEST_CODE_PERMISSION:
-                if (grantResults.length>0 && grantResults[0]==PackageManager.PERMISSION_GRANTED){
-                    location.onRequestPermissionResult(requestCode, permissions, grantResults);
-                    if (checkPlayServices()){
-                        buildGoogleApiClient();
-                        if (locationSwitch.isChecked())displayLocation();
-                    }
-                }
-
-                break;
-            case PLAY_SERVICES_REQUEST_CODE:
-                break;
-        }
-    }
-
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-        displayLocation();
-        location.inicializeLocation();
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-        mGoogleApiClient.connect();
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        location.inicializeLocation();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        location.stopUpdateLocation();
-    }
-
-    @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -478,27 +228,14 @@ public class DriverHomeActivity extends AppCompatActivity
         }
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-
-
-        return super.onOptionsItemSelected(item);
-    }
-
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
         int id = item.getItemId();
+
         switch (id){
-            case R.id.nav_trip_history:
-                showTripHistory();
+            case R.id.nav_history:
+                navController.navigate(R.id.nav_history);
                 break;
             case R.id.nav_car_type:
                 showDialogUpdateCarType();
@@ -507,25 +244,20 @@ public class DriverHomeActivity extends AppCompatActivity
                 showDialogUpdateInfo();
                 break;
             case R.id.nav_change_pwd:
-                if(account!=null)
-                    showDialogChangePwd();
+                showDialogChangePwd();
                 break;
             case R.id.nav_sign_out:
-                signOut();
+                homeViewModel.signOut(this);
                 break;
+            default:
+                navController.navigate(id);
         }
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
-        return true;
-    }
-
-    private void showTripHistory() {
-        Intent intent=new Intent(DriverHomeActivity.this, TripHistoryActivity.class);
-        startActivity(intent);
+        return false;
     }
 
     private void showDialogUpdateCarType() {
-        AlertDialog.Builder alertDialog = new AlertDialog.Builder(DriverHomeActivity.this);
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(HomeActivity.this);
         alertDialog.setTitle("UPDATE VEHICLE TYPE");
         LayoutInflater inflater = this.getLayoutInflater();
         View carType = inflater.inflate(R.layout.layout_update_car_type, null);
@@ -542,7 +274,7 @@ public class DriverHomeActivity extends AppCompatActivity
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 dialogInterface.dismiss();
-                final android.app.AlertDialog waitingDialog = new SpotsDialog.Builder().setContext(DriverHomeActivity.this).build();
+                final android.app.AlertDialog waitingDialog = new SpotsDialog.Builder().setContext(HomeActivity.this).build();
                 waitingDialog.show();
                 Map<String, Object> updateInfo=new HashMap<>();
                 if(rbUberX.isChecked())
@@ -558,9 +290,9 @@ public class DriverHomeActivity extends AppCompatActivity
                             public void onComplete(@NonNull Task<Void> task) {
                                 waitingDialog.dismiss();
                                 if(task.isSuccessful())
-                                    Toast.makeText(DriverHomeActivity.this,"Information Updated!",Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(HomeActivity.this,"Information Updated!",Toast.LENGTH_SHORT).show();
                                 else
-                                    Toast.makeText(DriverHomeActivity.this,"Information Update Failed!",Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(HomeActivity.this,"Information Update Failed!",Toast.LENGTH_SHORT).show();
 
                             }
                         });
@@ -588,7 +320,7 @@ public class DriverHomeActivity extends AppCompatActivity
     }
 
     private void showDialogUpdateInfo() {
-        AlertDialog.Builder alertDialog = new AlertDialog.Builder(DriverHomeActivity.this);
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(HomeActivity.this);
         alertDialog.setTitle("UPDATE INFORMATION");
         LayoutInflater inflater = this.getLayoutInflater();
         View layout_pwd = inflater.inflate(R.layout.layout_update_information, null);
@@ -606,7 +338,7 @@ public class DriverHomeActivity extends AppCompatActivity
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 dialogInterface.dismiss();
-                final android.app.AlertDialog waitingDialog = new SpotsDialog.Builder().setContext(DriverHomeActivity.this).build();
+                final android.app.AlertDialog waitingDialog = new SpotsDialog.Builder().setContext(HomeActivity.this).build();
                 waitingDialog.show();
                 String name = etName.getText().toString();
                 String phone = etPhone.getText().toString();
@@ -624,9 +356,9 @@ public class DriverHomeActivity extends AppCompatActivity
                             public void onComplete(@NonNull Task<Void> task) {
                                 waitingDialog.dismiss();
                                 if(task.isSuccessful())
-                                    Toast.makeText(DriverHomeActivity.this,"Information Updated!",Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(HomeActivity.this,"Information Updated!",Toast.LENGTH_SHORT).show();
                                 else
-                                    Toast.makeText(DriverHomeActivity.this,"Information Update Failed!",Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(HomeActivity.this,"Information Update Failed!",Toast.LENGTH_SHORT).show();
 
                             }
                         });
@@ -675,14 +407,14 @@ public class DriverHomeActivity extends AppCompatActivity
                 progressDialog.show();
 
                 String imageName=UUID.randomUUID().toString();
-                final StorageReference imageFolder=storageReference.child("images/"+imageName);
+                final StorageReference imageFolder = storageReference.child("images/"+imageName);
 
                 imageFolder.putFile(saveUri)
                         .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
                     public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                         progressDialog.dismiss();
-                        Toast.makeText(DriverHomeActivity.this, "Uploaded!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(HomeActivity.this, "Uploaded!", Toast.LENGTH_SHORT).show();
                         imageFolder.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                             @Override
                             public void onSuccess(Uri uri) {
@@ -696,9 +428,9 @@ public class DriverHomeActivity extends AppCompatActivity
                                     @Override
                                     public void onComplete(@NonNull Task<Void> task) {
                                         if(task.isSuccessful())
-                                            Toast.makeText(DriverHomeActivity.this, "Uploaded!", Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(HomeActivity.this, "Uploaded!", Toast.LENGTH_SHORT).show();
                                         else
-                                            Toast.makeText(DriverHomeActivity.this, "Uploaded error!", Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(HomeActivity.this, "Uploaded error!", Toast.LENGTH_SHORT).show();
 
                                     }
                                 });
@@ -717,7 +449,7 @@ public class DriverHomeActivity extends AppCompatActivity
     }
 
     private void showDialogChangePwd() {
-        AlertDialog.Builder alertDialog = new AlertDialog.Builder(DriverHomeActivity.this);
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(HomeActivity.this);
         alertDialog.setTitle("CHANGE PASSWORD");
 
 
@@ -734,7 +466,7 @@ public class DriverHomeActivity extends AppCompatActivity
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
 
-                final android.app.AlertDialog waitingDialog = new SpotsDialog.Builder().setContext(DriverHomeActivity.this).build();
+                final android.app.AlertDialog waitingDialog = new SpotsDialog.Builder().setContext(HomeActivity.this).build();
                 waitingDialog.show();
 
                 if (edtNewPassword.getText().toString().equals(edtRepeatPassword.getText().toString())) {
@@ -767,16 +499,16 @@ public class DriverHomeActivity extends AppCompatActivity
                                                                         @Override
                                                                         public void onComplete(@NonNull Task<Void> task) {
                                                                             if (task.isSuccessful())
-                                                                                Toast.makeText(DriverHomeActivity.this, "Password was changed!", Toast.LENGTH_SHORT).show();
+                                                                                Toast.makeText(HomeActivity.this, "Password was changed!", Toast.LENGTH_SHORT).show();
                                                                             else
-                                                                                Toast.makeText(DriverHomeActivity.this, "Password was doesn't changed!", Toast.LENGTH_SHORT).show();
+                                                                                Toast.makeText(HomeActivity.this, "Password was doesn't changed!", Toast.LENGTH_SHORT).show();
                                                                             waitingDialog.dismiss();
 
                                                                         }
                                                                     });
 
                                                         } else {
-                                                            Toast.makeText(DriverHomeActivity.this, "Password doesn't change", Toast.LENGTH_SHORT).show();
+                                                            Toast.makeText(HomeActivity.this, "Password doesn't change", Toast.LENGTH_SHORT).show();
 
                                                         }
                                                     }
@@ -784,7 +516,7 @@ public class DriverHomeActivity extends AppCompatActivity
 
                                     } else {
                                         waitingDialog.dismiss();
-                                        Toast.makeText(DriverHomeActivity.this, "Wrong old password", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(HomeActivity.this, "Wrong old password", Toast.LENGTH_SHORT).show();
                                     }
 
                                 }
@@ -792,7 +524,7 @@ public class DriverHomeActivity extends AppCompatActivity
 
                 } else {
                     waitingDialog.dismiss();
-                    Toast.makeText(DriverHomeActivity.this, "Password doesn't match", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(HomeActivity.this, "Password doesn't match", Toast.LENGTH_SHORT).show();
                 }
 
 
@@ -810,31 +542,11 @@ public class DriverHomeActivity extends AppCompatActivity
 
     }
 
-    private void signOut() {
-        if(account!=null) {
-            Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(new ResultCallback<Status>() {
-                @Override
-                public void onResult(@NonNull Status status) {
-                    if (status.isSuccess()) {
-                        Intent intent = new Intent(DriverHomeActivity.this, LoginActivity.class);
-                        startActivity(intent);
-                        finish();
-                    } else {
-                        Toast.makeText(DriverHomeActivity.this, "Could not log out", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            });
-
-        }else if(isLoggedInFacebook){
-            LoginManager.getInstance().logOut();
-            Intent intent = new Intent(DriverHomeActivity.this, LoginActivity.class);
-            startActivity(intent);
-            finish();
-        }else{
-            FirebaseAuth.getInstance().signOut();
-            Intent intent=new Intent(DriverHomeActivity.this, LoginActivity.class);
-            startActivity(intent);
-            finish();
-        }
+    @Override
+    public boolean onSupportNavigateUp() {
+        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
+        return NavigationUI.navigateUp(navController, mAppBarConfiguration)
+                || super.onSupportNavigateUp();
     }
+
 }

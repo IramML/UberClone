@@ -45,7 +45,6 @@ public class FirebaseMessagingService extends com.google.firebase.messaging.Fire
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         intent.putExtra("keyDriver",remoteMessage.getNotification().getBody());
                         startActivity(intent);*/
-
                     }
                 });
             }catch (Exception ex) {

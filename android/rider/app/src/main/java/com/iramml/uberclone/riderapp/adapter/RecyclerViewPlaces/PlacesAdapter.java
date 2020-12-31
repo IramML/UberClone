@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.iramml.uberclone.riderapp.adapter.ClickListener;
 import com.iramml.uberclone.riderapp.model.placesapi.Results;
 import com.iramml.uberclone.riderapp.R;
 

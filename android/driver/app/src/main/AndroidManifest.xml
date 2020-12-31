@@ -52,13 +52,13 @@
         </service>
 
         <activity
-            android:name="com.iramml.uberclone.driverapp.activity.DriverTrackingActivity"
+            android:name="com.iramml.uberclone.driverapp.activity.TrackingActivity"
             android:label="@string/title_activity_driver_tracking" />
         <activity
             android:name="com.iramml.uberclone.driverapp.activity.TripDetailActivity"
             android:label="@string/title_activity_trip_detail" />
         <activity
-            android:name="com.iramml.uberclone.driverapp.activity.DriverHomeActivity"
+            android:name="com.iramml.uberclone.driverapp.activity.HomeActivity"
             android:label="@string/title_activity_drawer_home"
             android:theme="@style/AppTheme" />
 

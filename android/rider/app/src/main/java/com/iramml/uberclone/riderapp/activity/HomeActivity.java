@@ -32,6 +32,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
+import com.iramml.uberclone.riderapp.adapter.ClickListener;
 import com.iramml.uberclone.riderapp.common.Common;
 import com.iramml.uberclone.riderapp.common.ConfigApp;
 import com.iramml.uberclone.riderapp.fragment.BottomSheetRiderFragment;
