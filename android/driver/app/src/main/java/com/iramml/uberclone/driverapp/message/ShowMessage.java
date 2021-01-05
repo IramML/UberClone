@@ -1,40 +1,46 @@
 package com.iramml.uberclone.driverapp.message;
 
 import android.content.Context;
+import android.view.View;
 import android.widget.Toast;
 
 import com.iramml.uberclone.driverapp.R;
+import com.iramml.uberclone.driverapp.util.Utilities;
 
 public class ShowMessage {
-    public static void message(Context context, Messages message){
-        String str="";
+    private static final Utilities utilities = new Utilities();
+
+    public static void message(View root, Context context, Messages message) {
+        String messageStr = "";
         switch (message){
             case PERMISSION_DENIED:
-                str=context.getResources().getString(R.string.permission_denied);
+                messageStr = context.getResources().getString(R.string.permission_denied);
                 break;
             case RATIONALE:
-                str=context.getResources().getString(R.string.permission_denied_location);
+                messageStr = context.getResources().getString(R.string.permission_denied_location);
                 break;
             case CANCELLED:
-                str=context.getResources().getString(R.string.cancelled);
+                messageStr = context.getResources().getString(R.string.cancelled);
                 break;
         }
-        Toast.makeText(context, str, Toast.LENGTH_SHORT).show();
+
+        utilities.displayMessage(root, context, messageStr);
     }
 
-    public static void messageError(Context context, Errors message) {
-        String str="";
+    public static void messageError(View root, Context context, Errors message) {
+        String messageStr = "";
         switch (message){
             case ERROR_LOGIN_GOOGLE:
-                str=context.getResources().getString(R.string.could_not_login);
+                messageStr = context.getResources().getString(R.string.could_not_login);
                 break;
             case NOT_SUPPORT:
-                str=context.getResources().getString(R.string.device_not_supported);
+                messageStr = context.getResources().getString(R.string.device_not_supported);
                 break;
             case WITHOUT_LOCATION:
-                str=context.getResources().getString(R.string.cannot_get_location);
+                messageStr = context.getResources().getString(R.string.cannot_get_location);
                 break;
         }
-        Toast.makeText(context, str, Toast.LENGTH_SHORT).show();
+
+        utilities.displayMessage(root, context, messageStr);
     }
 }

@@ -2,7 +2,7 @@ package com.iramml.uberclone.driverapp.common;
 
 import com.iramml.uberclone.driverapp.interfaces.IFCMService;
 import com.iramml.uberclone.driverapp.interfaces.googleAPIInterface;
-import com.iramml.uberclone.driverapp.model.User;
+import com.iramml.uberclone.driverapp.model.firebase.User;
 import com.iramml.uberclone.driverapp.retrofit.FCMClient;
 import com.iramml.uberclone.driverapp.retrofit.RetrofitClient;
 
@@ -26,13 +26,4 @@ public class Common {
         return ConfigApp.baseFare + (ConfigApp.distanceRate * km) + (ConfigApp.timeRate * min);
     }
 
-    public static googleAPIInterface getGoogleAPI(){
-        final String baseURL = "https://maps.googleapis.com";
-        return RetrofitClient.getClient(baseURL).create(googleAPIInterface.class);
-    }
-
-    public static IFCMService getFCMService(){
-        final String fcmURL = "https://fcm.googleapis.com/";
-        return FCMClient.getClient(fcmURL).create(IFCMService.class);
-    }
 }

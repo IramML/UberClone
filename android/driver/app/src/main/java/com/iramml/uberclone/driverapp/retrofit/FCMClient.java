@@ -5,7 +5,10 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class FCMClient {
     private static Retrofit retrofit;
-    public static Retrofit getClient(String baseURL){
+
+    public static Retrofit getClient(){
+        final String baseURL = "https://fcm.googleapis.com/";
+
         if (retrofit==null){
             retrofit=new Retrofit.Builder().baseUrl(baseURL).addConverterFactory(GsonConverterFactory.create()).build();
 

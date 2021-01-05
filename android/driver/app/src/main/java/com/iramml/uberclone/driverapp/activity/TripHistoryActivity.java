@@ -18,7 +18,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.iramml.uberclone.driverapp.common.Common;
-import com.iramml.uberclone.driverapp.model.History;
+import com.iramml.uberclone.driverapp.model.firebase.History;
 import com.iramml.uberclone.driverapp.R;
 import com.iramml.uberclone.driverapp.adapter.ClickListener;
 import com.iramml.uberclone.driverapp.adapter.recyclerviewhistory.HistoryAdapter;

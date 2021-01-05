@@ -1,4 +1,4 @@
-package com.iramml.uberclone.riderapp.model.firebase;
+package com.iramml.uberclone.driverapp.model.firebase;
 
 import com.google.android.gms.maps.model.LatLng;
 

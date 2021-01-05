@@ -14,18 +14,18 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 
-public class Location {
+public class LocationUtil {
     Activity activity;
     private final String permissionFineLocation=android.Manifest.permission.ACCESS_FINE_LOCATION;
     private final String permissionCoarseLocation=android.Manifest.permission.ACCESS_COARSE_LOCATION;
 
-    private final int REQUEST_CODE_LOCATION=100;
+    public static final int REQUEST_CODE_LOCATION = 2001;
 
     private FusedLocationProviderClient fusedLocationClient;
 
     private LocationRequest locationRequest;
     private LocationCallback locationCallback;
-    public Location(Activity activity, final locationListener locationListener) {
+    public LocationUtil(Activity activity, final locationListener locationListener) {
         this.activity = activity;
         fusedLocationClient = new FusedLocationProviderClient(activity.getApplicationContext());
 
@@ -56,14 +56,16 @@ public class Location {
     private void requestPermissions(){
         Boolean contextProvider=ActivityCompat.shouldShowRequestPermissionRationale(activity, permissionFineLocation);
 
-        if (contextProvider) ShowMessage.message(activity.getApplicationContext(), Messages.RATIONALE);
+        if (contextProvider) ShowMessage.message(null, activity.getApplicationContext(), Messages.RATIONALE);
         permissionRequest();
     }
-    public void onRequestPermissionResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults){
-        switch (requestCode){
+    public void onRequestPermissionResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
             case REQUEST_CODE_LOCATION:
-                if (grantResults.length>0 && grantResults[0]==PackageManager.PERMISSION_GRANTED)getLocation();
-                else ShowMessage.message(activity.getApplicationContext(), Messages.PERMISSION_DENIED);
+                if (grantResults.length>0 && grantResults[0]==PackageManager.PERMISSION_GRANTED)
+                    getLocation();
+                else
+                    ShowMessage.message(null, activity.getApplicationContext(), Messages.PERMISSION_DENIED);
                 break;
         }
     }

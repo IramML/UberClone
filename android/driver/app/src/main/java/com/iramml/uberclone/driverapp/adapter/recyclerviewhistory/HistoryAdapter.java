@@ -8,7 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.iramml.uberclone.driverapp.adapter.ClickListener;
-import com.iramml.uberclone.driverapp.model.History;
+import com.iramml.uberclone.driverapp.model.firebase.History;
 import com.iramml.uberclone.driverapp.R;
 
 import java.util.ArrayList;

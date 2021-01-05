@@ -45,18 +45,20 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.iramml.uberclone.driverapp.common.Common;
+import com.iramml.uberclone.driverapp.common.ConfigApp;
 import com.iramml.uberclone.driverapp.helper.DirectionJSONParser;
 import com.iramml.uberclone.driverapp.interfaces.IFCMService;
 import com.iramml.uberclone.driverapp.interfaces.googleAPIInterface;
 import com.iramml.uberclone.driverapp.interfaces.locationListener;
-import com.iramml.uberclone.driverapp.model.FCMResponse;
-import com.iramml.uberclone.driverapp.model.History;
-import com.iramml.uberclone.driverapp.model.Notification;
-import com.iramml.uberclone.driverapp.model.Sender;
-import com.iramml.uberclone.driverapp.model.Token;
-import com.iramml.uberclone.driverapp.model.User;
+import com.iramml.uberclone.driverapp.model.fcm.FCMResponse;
+import com.iramml.uberclone.driverapp.model.firebase.History;
+import com.iramml.uberclone.driverapp.model.fcm.Notification;
+import com.iramml.uberclone.driverapp.model.fcm.Sender;
+import com.iramml.uberclone.driverapp.model.firebase.User;
 import com.iramml.uberclone.driverapp.R;
-import com.iramml.uberclone.driverapp.util.Location;
+import com.iramml.uberclone.driverapp.retrofit.FCMClient;
+import com.iramml.uberclone.driverapp.retrofit.RetrofitClient;
+import com.iramml.uberclone.driverapp.util.LocationUtil;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -74,7 +76,7 @@ import retrofit2.Response;
 public class TrackingActivity extends AppCompatActivity implements OnMapReadyCallback , GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener{
 
     private GoogleMap mMap;
-    Location location=null;
+    LocationUtil location=null;
 
     private GoogleApiClient mGoogleApiClient;
     double riderLat, riderLng;
@@ -122,9 +124,9 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
         verifyGoogleAccount();
 
 
-        mService = Common.getGoogleAPI();
-        mFCMService=Common.getFCMService();
-        location=new Location(this, new locationListener() {
+        mService = RetrofitClient.getClient().create(googleAPIInterface.class);
+        mFCMService = FCMClient.getClient().create(IFCMService.class);
+        location=new LocationUtil(this, new locationListener() {
             @Override
             public void locationResponse(LocationResult response) {
                 // refresh current location
@@ -171,7 +173,7 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
                     "transit_routing_preference=less_driving&" +
                     "origin=" + pickupLocation.latitude + "," + pickupLocation.longitude + "&" +
                     "destination=" + latLng.latitude + "," + latLng.longitude + "&" +
-                    "key=" + getResources().getString(R.string.google_direction_api);
+                    "key=" + ConfigApp.GOOGLE_API_KEY;
             mService.getPath(requestApi)
                     .enqueue(new Callback<String>() {
                         @Override
@@ -296,10 +298,9 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
 
     }
 
-    private void sendArrivedNotification(String customerId) {
-        Token token = new Token(customerId);
+    private void sendArrivedNotification(String customerToken) {
         Notification notification = new Notification( "Arrived",String.format("The driver %s has arrived at your location", Common.currentUser.getName()));
-        Sender sender = new Sender(token.getToken(), notification);
+        Sender sender = new Sender(customerToken, notification);
 
         mFCMService.sendMessage(sender).enqueue(new Callback<FCMResponse>() {
             @Override
@@ -317,10 +318,9 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
 
     }
 
-    private void sendDropOffNotification(String customerId) {
-        Token token = new Token(customerId);
-        Notification notification = new Notification( "DropOff", customerId);
-        Sender sender = new Sender(token.getToken(), notification);
+    private void sendDropOffNotification(String customertoken) {
+        Notification notification = new Notification( "DropOff", customertoken);
+        Sender sender = new Sender(customertoken, notification);
 
         mFCMService.sendMessage(sender).enqueue(new Callback<FCMResponse>() {
             @Override
@@ -387,7 +387,7 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
                     "transit_routing_preference=less_driving&" +
                     "origin=" + currentPosition.latitude + "," + currentPosition.longitude + "&" +
                     "destination=" + riderLat + "," + riderLng + "&" +
-                    "key=" + getResources().getString(R.string.google_direction_api);
+                    "key=" + ConfigApp.GOOGLE_API_KEY;
             Log.d("ISAKAY", requestApi);//print url for debug
             mService.getPath(requestApi)
                     .enqueue(new Callback<String>() {

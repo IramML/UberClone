@@ -43,7 +43,6 @@ import com.iramml.uberclone.riderapp.interfaces.locationListener;
 import com.iramml.uberclone.riderapp.messages.Errors;
 import com.iramml.uberclone.riderapp.messages.ShowMessage;
 import com.iramml.uberclone.riderapp.model.firebase.User;
-import com.iramml.uberclone.riderapp.model.firebase.Token;
 import com.iramml.uberclone.riderapp.model.placesapi.PlacesResponse;
 import com.iramml.uberclone.riderapp.model.placesapi.Results;
 import com.iramml.uberclone.riderapp.R;
@@ -375,24 +374,10 @@ public class HomeActivity extends AppCompatActivity
     }
 
     private void updateFirebaseToken() {
-        FirebaseDatabase db=FirebaseDatabase.getInstance();
-        final DatabaseReference tokens=db.getReference(Common.token_tbl);
+        FirebaseDatabase db = FirebaseDatabase.getInstance();
+        final DatabaseReference tokens = db.getReference(Common.token_tbl);
 
-        final Token token=new Token(FirebaseInstanceId.getInstance().getToken());
-        if(FirebaseAuth.getInstance().getUid()!=null) tokens.child(FirebaseAuth.getInstance().getUid()).setValue(token);
-        else if(account!=null) tokens.child(account.getId()).setValue(token);
-        else{
-            GraphRequest request = GraphRequest.newMeRequest(
-                    accessToken,
-                    new GraphRequest.GraphJSONObjectCallback() {
-                        @Override
-                        public void onCompleted(JSONObject object, GraphResponse response) {
-                            String id = object.optString("id");
-                            tokens.child(id).setValue(token);
-                        }
-                    });
-            request.executeAsync();
-        }
+        tokens.child(FirebaseAuth.getInstance().getUid()).setValue(FirebaseInstanceId.getInstance().getToken());
     }
 
     private void requestPickup(String uid) {

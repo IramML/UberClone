@@ -24,6 +24,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.OptionalPendingResult;
+import com.google.firebase.auth.FirebaseAuth;
 import com.iramml.uberclone.driverapp.helper.FirebaseHelper;
 import com.iramml.uberclone.driverapp.message.Errors;
 import com.iramml.uberclone.driverapp.message.ShowMessage;
@@ -33,52 +34,27 @@ import java.util.Arrays;
 
 import mehdi.sakout.fancybuttons.FancyButton;
 
-public class LoginActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
-    private GoogleApiClient googleApiClient;
-    public static final int SIGN_IN_CODE_GOOGLE=157;
-    Button btnSignIn, btnLogIn;
+public class LoginActivity extends AppCompatActivity {
+    private Button btnSignIn, btnLogIn;
 
     FirebaseHelper firebaseHelper;
     GoogleSignInAccount account;
 
-    //facebook
-    CallbackManager mFacebookCallbackManager;
-    LoginManager mLoginManager;
-    AccessToken accessToken = AccessToken.getCurrentAccessToken();
-    boolean isLoggedIn = accessToken != null && !accessToken.isExpired();
-    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        firebaseHelper=new FirebaseHelper(this);
-        FancyButton signInButtonGoogle=findViewById(R.id.login_button_Google);
-        FancyButton signInButtonFacebook=findViewById(R.id.facebookLogin);
-        GoogleSignInOptions gso=new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().build();
-        googleApiClient=new GoogleApiClient.Builder(this)
-                .enableAutoManage(this, this)
-                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
-                .build();
-        signInButtonGoogle.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent=Auth.GoogleSignInApi.getSignInIntent(googleApiClient);
-                startActivityForResult(intent, SIGN_IN_CODE_GOOGLE);
-            }
-        });
-        setupFacebookStuff();
-        signInButtonFacebook.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (AccessToken.getCurrentAccessToken() != null){
-                    mLoginManager.logOut();
-                } else {
-                    mLoginManager.logInWithReadPermissions(LoginActivity.this, Arrays.asList("email", "user_birthday", "public_profile"));
-                }
-            }
-        });
-        btnSignIn=findViewById(R.id.btnSignin);
-        btnLogIn=findViewById(R.id.btnLogin);
+        firebaseHelper = new FirebaseHelper(this);
+        initViews();
+        initListeners();
+    }
+
+    private void initViews() {
+        btnSignIn = findViewById(R.id.btnSignin);
+        btnLogIn = findViewById(R.id.btnLogin);
+    }
+
+    private void initListeners() {
         btnSignIn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -93,74 +69,14 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         });
     }
 
-    private void verifyGoogleAccount() {
-        OptionalPendingResult<GoogleSignInResult> opr= Auth.GoogleSignInApi.silentSignIn(googleApiClient);
-        if (opr.isDone()){
-            GoogleSignInResult result= opr.get();
-            if (result.isSuccess())
-                firebaseHelper.loginSuccess();
-
-        }
-    }
-
     @Override
     protected void onStart() {
         super.onStart();
-        if(isLoggedIn){
+        if(FirebaseAuth.getInstance().getCurrentUser() != null &&
+                !FirebaseAuth.getInstance().getCurrentUser().getUid().equals("")){
             startActivity(new Intent(LoginActivity.this, HomeActivity.class));
             finish();
         }
-        verifyGoogleAccount();
-    }
-    private void setupFacebookStuff() {
-
-        // This should normally be on your application class
-        FacebookSdk.sdkInitialize(getApplicationContext());
-
-        mLoginManager = LoginManager.getInstance();
-        mFacebookCallbackManager = CallbackManager.Factory.create();
-
-        LoginManager.getInstance().registerCallback(mFacebookCallbackManager, new FacebookCallback<LoginResult>() {
-            @Override
-            public void onSuccess(LoginResult loginResult) {
-                //login
-                firebaseHelper.registerByFacebookAccount();
-            }
-
-            @Override
-            public void onCancel() {
-                Toast.makeText(LoginActivity.this,"The login was canceled",Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onError(FacebookException error) {
-                Toast.makeText(LoginActivity.this,"There was an error in the login",Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode==SIGN_IN_CODE_GOOGLE) {//Google
-            GoogleSignInResult result=Auth.GoogleSignInApi.getSignInResultFromIntent(data);
-            handleSignInResult(result);
-        }
-        mFacebookCallbackManager.onActivityResult(requestCode, resultCode, data);
-    }
-
-    private void handleSignInResult(GoogleSignInResult result) {
-        if (result.isSuccess()){
-            account = result.getSignInAccount();
-            firebaseHelper.registerByGoogleAccount(account);
-        }else{
-            ShowMessage.messageError(this, Errors.ERROR_LOGIN_GOOGLE);
-        }
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        ShowMessage.messageError(this, Errors.ERROR_LOGIN_GOOGLE);
     }
 
     @Override

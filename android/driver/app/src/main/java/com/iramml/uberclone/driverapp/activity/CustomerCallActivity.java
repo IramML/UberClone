@@ -12,16 +12,19 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.google.gson.Gson;
 import com.iramml.uberclone.driverapp.common.Common;
+import com.iramml.uberclone.driverapp.common.ConfigApp;
 import com.iramml.uberclone.driverapp.model.RoutesAPI.GoogleMapsAPIRequest;
 import com.iramml.uberclone.driverapp.interfaces.IFCMService;
 import com.iramml.uberclone.driverapp.interfaces.googleAPIInterface;
 import com.iramml.uberclone.driverapp.message.ShowMessage;
 import com.iramml.uberclone.driverapp.message.Messages;
-import com.iramml.uberclone.driverapp.model.FCMResponse;
-import com.iramml.uberclone.driverapp.model.Notification;
-import com.iramml.uberclone.driverapp.model.Sender;
-import com.iramml.uberclone.driverapp.model.Token;
+import com.iramml.uberclone.driverapp.model.fcm.FCMResponse;
+import com.iramml.uberclone.driverapp.model.fcm.Notification;
+import com.iramml.uberclone.driverapp.model.fcm.Sender;
 import com.iramml.uberclone.driverapp.R;
+import com.iramml.uberclone.driverapp.retrofit.FCMClient;
+import com.iramml.uberclone.driverapp.retrofit.RetrofitClient;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -40,8 +43,8 @@ public class CustomerCallActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_custommer_call);
-        mService = Common.getGoogleAPI();
-        mFCMService = Common.getFCMService();
+        mService = RetrofitClient.getClient().create(googleAPIInterface.class);
+        mFCMService = FCMClient.getClient().create(IFCMService.class);
         initViews();
         initListeners();
         playCallSound();
@@ -93,17 +96,16 @@ public class CustomerCallActivity extends AppCompatActivity {
         mediaPlayer.start();
     }
 
-    private void cancelRequest(String riderID) {
-        Token token = new Token(riderID);
+    private void cancelRequest(String riderToken) {
 
         Notification notification = new Notification("Cancel", "Driver has cancelled your request");
-        Sender sender = new Sender(token.getToken(), notification);
+        Sender sender = new Sender(riderToken, notification);
 
         mFCMService.sendMessage(sender).enqueue(new Callback<FCMResponse>() {
             @Override
             public void onResponse(Call<FCMResponse> call, Response<FCMResponse> response) {
                 if(response.body().success==1){
-                    ShowMessage.message(getApplicationContext(), Messages.CANCELLED);
+                    ShowMessage.message(null, getApplicationContext(), Messages.CANCELLED);
                     finish();
                 }
             }
@@ -121,7 +123,7 @@ public class CustomerCallActivity extends AppCompatActivity {
         try{
             requestApi="https://maps.googleapis.com/maps/api/directions/json?mode=driving&" +
                     "transit_routing_preference=less_driving&origin=" + Common.currentLat + "," + Common.currentLng+"&" +
-                    "destination=" + lat + "," + lng + "&key=" + getResources().getString(R.string.google_direction_api);
+                    "destination=" + lat + "," + lng + "&key=" + ConfigApp.GOOGLE_API_KEY;
             Log.d("URL_MAPS", requestApi);
             mService.getPath(requestApi).enqueue(new Callback<String>() {
                 @Override

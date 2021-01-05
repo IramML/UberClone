@@ -1,33 +1,60 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
 <resources>
     <string name="app_name">UC Driver</string>
-    <string name="title_activity_main">Map</string>
-    <string name="google_direction_api">AIzaSyDcUwk5nBq2FTZsbWDVt1gQKW1MZYw5Ioo</string>
-    <string name="tv_login_title">DRIVER</string>
-    <string name="tv_login_subtitle">UBER CLONE</string>
-    <string name="login">LOG IN</string>
-    <string name="signin">SIGN IN</string>
+
     <string name="btn_accept">ACCEPT</string>
     <string name="btn_decline">DECLINE</string>
-    <string name="tv_find_users">Find users</string>
+
+    <string name="cancel">Cancel</string>
+
+    <string name="cancelled">Cancelled</string>
+
+    <string name="cannot_get_location">Cannot get your location</string>
+
+    <string name="could_not_login">Could not login</string>
+
+    <string name="device_not_supported">This device is not supported</string>
+
+    <string name="email">Email</string>
+
+    <string name="enter_email">Please enter email address</string>
+    <string name="enter_name">Please enter name</string>
+    <string name="enter_password">Please enter password</string>
+    <string name="enter_phone">Please enter phone number</string>
+
+    <string name="facebook_app_id">2210819865853004</string>
+
+    <string name="failed">Failed </string>
+
+    <string name="fb_login_protocol_scheme">fb2210819865853004</string>
+
+    <string name="fill_fields">Please fill all fields</string>
+
+    <string name="login">LOG IN</string>
+
+    <string name="name">Name</string>
+
+    <string name="nav_history">History</string>
+    <string name="nav_home">Home</string>
+
+    <string name="password">Password</string>
+    <string name="password_short">Password too short</string>
+
     <string name="permission_denied">Permission denied</string>
     <string name="permission_denied_location">Permission is required to obtain location</string>
-    <string name="cancelled">Cancelled</string>
-    <string name="could_not_login">Could not login</string>
-    <string name="device_not_supported">This device is not supported</string>
-    <string name="cannot_get_location">Cannot get your location</string>
-    <string name="fill_fields">Please fill all fields</string>
-    <string name="enter_email">Please enter email address</string>
-    <string name="enter_password">Please enter password</string>
-    <string name="enter_name">Please enter name</string>
-    <string name="enter_phone">Please enter phone number</string>
-    <string name="password_short">Password too short</string>
-    <string name="failed">Failed </string>
-    <string name="cancel">Cancel</string>
-    <string name="register">REGISTER</string>
-    <string name="registered">Registered</string>
-    <string name="email">Email</string>
-    <string name="password">Password</string>
-    <string name="name">Name</string>
+
     <string name="phone">Phone</string>
+
+    <string name="register">REGISTER</string>
+
+    <string name="registered">Registered</string>
+
+    <string name="sign_in">SIGN IN</string>
+    <string name="sign_up">SIGN UP</string>
+
+    <string name="title_activity_main">Map</string>
+
+    <string name="tv_find_users">Find users</string>
+    <string name="tv_login_subtitle">UBER CLONE</string>
+    <string name="tv_login_title">DRIVER</string>
 </resources>

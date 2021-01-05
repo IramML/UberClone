@@ -1,4 +1,4 @@
-package com.iramml.uberclone.driverapp.model;
+package com.iramml.uberclone.driverapp.model.firebase;
 
 public class History {
     private String startAddress,endAddress,time,distance,locationStart,locationEnd,tripDate,name;

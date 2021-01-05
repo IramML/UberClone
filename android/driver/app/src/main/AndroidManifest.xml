@@ -16,13 +16,15 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name="com.iramml.uberclone.driverapp.activity.TripHistoryActivity"></activity>
+        <activity android:name="com.iramml.uberclone.driverapp.activity.TripHistoryActivity"
+            android:screenOrientation="portrait"/>
 
         <uses-library
             android:name="org.apache.http.legacy"
             android:required="false" />
 
-        <activity android:name="com.iramml.uberclone.driverapp.activity.LoginActivity">
+        <activity android:name="com.iramml.uberclone.driverapp.activity.LoginActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -41,7 +43,8 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
-        <activity android:name="com.iramml.uberclone.driverapp.activity.CustomerCallActivity" />
+        <activity android:name="com.iramml.uberclone.driverapp.activity.CustomerCallActivity"
+            android:screenOrientation="portrait"/>
 
         <service
             android:name=".service.firebaseMessaging"
@@ -53,14 +56,17 @@
 
         <activity
             android:name="com.iramml.uberclone.driverapp.activity.TrackingActivity"
-            android:label="@string/title_activity_driver_tracking" />
+            android:label="@string/title_activity_driver_tracking"
+            android:screenOrientation="portrait"/>
         <activity
             android:name="com.iramml.uberclone.driverapp.activity.TripDetailActivity"
-            android:label="@string/title_activity_trip_detail" />
+            android:label="@string/title_activity_trip_detail"
+            android:screenOrientation="portrait"/>
         <activity
             android:name="com.iramml.uberclone.driverapp.activity.HomeActivity"
             android:label="@string/title_activity_drawer_home"
-            android:theme="@style/AppTheme" />
+            android:theme="@style/AppTheme"
+            android:screenOrientation="portrait"/>
 
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"

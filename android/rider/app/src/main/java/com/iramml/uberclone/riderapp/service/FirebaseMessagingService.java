@@ -20,7 +20,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.iramml.uberclone.riderapp.activity.HomeActivity;
 import com.iramml.uberclone.riderapp.activity.RateActivity;
 import com.iramml.uberclone.riderapp.common.Common;
-import com.iramml.uberclone.riderapp.model.firebase.Token;
 import com.iramml.uberclone.riderapp.R;
 import com.google.firebase.messaging.RemoteMessage;
 
@@ -64,13 +63,14 @@ public class FirebaseMessagingService extends com.google.firebase.messaging.Fire
     }
 
     @Override
-    public void onNewToken(@NonNull String s) {
-        super.onNewToken(s);
+    public void onNewToken(@NonNull String token) {
+        super.onNewToken(token);
         FirebaseDatabase db=FirebaseDatabase.getInstance();
         DatabaseReference tokens=db.getReference(Common.token_tbl);
 
-        Token token=new Token(s);
-        if (FirebaseAuth.getInstance().getCurrentUser()!=null)tokens.child(FirebaseAuth.getInstance().getUid())
+        if (FirebaseAuth.getInstance().getCurrentUser()!=null)
+            tokens
+                .child(FirebaseAuth.getInstance().getUid())
                 .setValue(token);
     }
 

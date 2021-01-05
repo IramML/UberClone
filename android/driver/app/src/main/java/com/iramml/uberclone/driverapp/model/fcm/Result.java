@@ -1,4 +1,4 @@
-package com.iramml.uberclone.driverapp.model;
+package com.iramml.uberclone.driverapp.model.fcm;
 
 public class Result {
     public String message_id;

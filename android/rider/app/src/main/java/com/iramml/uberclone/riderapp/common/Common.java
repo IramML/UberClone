@@ -13,7 +13,6 @@ import com.iramml.uberclone.riderapp.model.fcm.Notification;
 import com.iramml.uberclone.riderapp.model.firebase.Pickup;
 import com.iramml.uberclone.riderapp.model.firebase.User;
 import com.iramml.uberclone.riderapp.model.fcm.Sender;
-import com.iramml.uberclone.riderapp.model.firebase.Token;
 import com.iramml.uberclone.riderapp.retrofit.GoogleMapsAPI;
 import com.iramml.uberclone.riderapp.retrofit.IFCMClient;
 import com.iramml.uberclone.riderapp.retrofit.IGoogleAPI;
@@ -68,16 +67,17 @@ public class Common {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for (DataSnapshot postSnapShot:dataSnapshot.getChildren()){
-                    Token token = postSnapShot.getValue(Token.class);
+                    String token = postSnapShot.getValue(String.class);
                     Pickup pickup = new Pickup();
-                    pickup.setLastLocation(lastLocation);
+                    pickup.setLat(lastLocation.latitude);
+                    pickup.setLng(lastLocation.longitude);
                     pickup.setID(userID);
                     pickup.setToken(token);
                     String json_pickup = new Gson().toJson(pickup);
 
                     String riderToken = FirebaseInstanceId.getInstance().getToken();
                     Notification data = new Notification("Pickup", json_pickup);
-                    Sender content = new Sender(token.getToken(), data);
+                    Sender content = new Sender(token, data);
 
                     mService.sendMessage(content).enqueue(new Callback<FCMResponse>() {
                         @Override

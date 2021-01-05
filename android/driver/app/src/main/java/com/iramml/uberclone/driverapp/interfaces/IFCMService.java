@@ -1,8 +1,8 @@
 package com.iramml.uberclone.driverapp.interfaces;
 
 import com.iramml.uberclone.driverapp.common.ConfigApp;
-import com.iramml.uberclone.driverapp.model.FCMResponse;
-import com.iramml.uberclone.driverapp.model.Sender;
+import com.iramml.uberclone.driverapp.model.fcm.FCMResponse;
+import com.iramml.uberclone.driverapp.model.fcm.Sender;
 
 import retrofit2.Call;
 import retrofit2.http.Body;

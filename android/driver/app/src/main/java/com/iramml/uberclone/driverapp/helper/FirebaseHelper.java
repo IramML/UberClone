@@ -1,5 +1,6 @@
 package com.iramml.uberclone.driverapp.helper;
 
+import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import androidx.annotation.NonNull;
@@ -27,7 +28,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.iramml.uberclone.driverapp.activity.HomeActivity;
 import com.iramml.uberclone.driverapp.common.Common;
-import com.iramml.uberclone.driverapp.model.User;
+import com.iramml.uberclone.driverapp.model.firebase.User;
 import com.iramml.uberclone.driverapp.R;
 import com.rengwuxian.materialedittext.MaterialEditText;
 
@@ -36,23 +37,22 @@ import org.json.JSONObject;
 import dmax.dialog.SpotsDialog;
 
 public class FirebaseHelper {
-    AppCompatActivity activity;
+    Activity activity;
     FirebaseAuth firebaseAuth;
     FirebaseDatabase firebaseDatabase;
     DatabaseReference users;
 
     ConstraintLayout root;
 
-    public FirebaseHelper(AppCompatActivity activity){
-        this.activity=activity;
-        root=activity.findViewById(R.id.root);
-        firebaseAuth=FirebaseAuth.getInstance();
-        firebaseDatabase=FirebaseDatabase.getInstance();
-        users=firebaseDatabase.getReference(Common.user_driver_tbl);
-        if(firebaseAuth.getUid()!=null)loginSuccess();
+    public FirebaseHelper(Activity activity){
+        this.activity = activity;
+        root = activity.findViewById(R.id.root);
+        firebaseAuth = FirebaseAuth.getInstance();
+        firebaseDatabase = FirebaseDatabase.getInstance();
+        users = firebaseDatabase.getReference(Common.user_driver_tbl);
     }
     public void showLoginDialog(){
-        AlertDialog.Builder alertDialog=new AlertDialog.Builder(activity);
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(activity);
         alertDialog.setTitle(activity.getResources().getString(R.string.login));
         alertDialog.setMessage(activity.getResources().getString(R.string.fill_fields));
 
