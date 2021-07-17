@@ -22,7 +22,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.gson.Gson;
 
 import retrofit2.Call;
@@ -75,7 +74,6 @@ public class Common {
                     pickup.setToken(token);
                     String json_pickup = new Gson().toJson(pickup);
 
-                    String riderToken = FirebaseInstanceId.getInstance().getToken();
                     Notification data = new Notification("Pickup", json_pickup);
                     Sender content = new Sender(token, data);
 
